@@ -4,6 +4,14 @@ const ProductService = require("../services/product");
 const ProductDiscountService = require("../services/productDiscount");
 
 class ProductController {
+
+  // crawl
+  static async crawl(req, res) {
+    new CreatedResponse({
+      metadata: await ProductService.crawl(req.body),
+    }).send(res);
+  }
+
   static async create(req, res) {
     new CreatedResponse({
       metadata: await ProductService.create(req.body),

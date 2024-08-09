@@ -60,6 +60,14 @@ router.get(
   asyncHandler(ProductController.getOneBySlug)
 );
 
+// crawl
+router.post(
+  "/crawl",
+  body("url").notEmpty().withMessage("URL is missing"),
+  validate,
+  asyncHandler(ProductController.crawl)
+)
+
 router.use(authentication);
 
 router.post(
