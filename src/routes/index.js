@@ -17,4 +17,6 @@ router.use("/payments", require("./payment"));
 router.use("/orders", require("./order"));
 router.use("/coupons", require("./coupon"));
 
+router.use("/uploadTempData", require("./uploadTempData"));
+
 module.exports = router;

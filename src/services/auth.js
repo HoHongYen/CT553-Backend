@@ -66,6 +66,7 @@ class AuthService {
           gender: true,
           birthday: null,
           avatarId,
+          isGoogleLogin: true,
         },
       });
       account = await prisma.account.findUnique({
