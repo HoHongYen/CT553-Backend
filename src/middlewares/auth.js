@@ -14,7 +14,7 @@ const permission = (permittedRoles) => (req, res, next) => {
 const authentication = (req, res, next) => {
   try {
     const token = getTokenFromRequest(req);
-
+    
     req.account = jwt.verify(token, process.env.JWT_SECRET);
 
     next();

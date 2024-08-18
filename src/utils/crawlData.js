@@ -1,7 +1,7 @@
 const cheerio = require('cheerio');
 const puppeteer = require('puppeteer');
 
-const getPicture = async (url) => {
+const getProduct = async (url) => {
 
 	const browser = await puppeteer.launch();
 	const page = await browser.newPage();
@@ -81,5 +81,5 @@ const getPicture = async (url) => {
 }
 
 module.exports = {
-	getPicture,
+	getProduct,
 }

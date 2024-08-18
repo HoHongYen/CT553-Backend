@@ -20,6 +20,9 @@ class AccountService {
         id: accountId,
       },
       data: updatedData,
+      include: {
+        avatar: true,
+      },
     });
 
     delete updatedAccount.password;

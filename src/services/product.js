@@ -17,7 +17,7 @@ const {
 const { getGenderFromQuery } = require("../utils");
 const { Prisma } = require("@prisma/client");
 const { getQueryObjectBasedOnFilters } = require("../utils/product");
-const { getPicture } = require("../utils/crawlData");
+const { getProduct } = require("../utils/crawlData");
 
 const commonIncludeOptionsInProduct = {
   images: {
@@ -55,7 +55,7 @@ const commonIncludeOptionsInProduct = {
 class ProductService {
   // crawl
   static async crawl({ url }) {
-      const productData = await getPicture(url);
+      const productData = await getProduct(url);
       return productData;
   }
   static async create({ uploadedImageIds, ...data }) {
