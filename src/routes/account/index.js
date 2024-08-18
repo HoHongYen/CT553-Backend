@@ -20,5 +20,9 @@ router.put(
   validate,
   asyncHandler(AccountController.updateInformation)
 );
+router.put(
+  "/password",
+  asyncHandler(AccountController.changePassword)
+);
 
 module.exports = router;

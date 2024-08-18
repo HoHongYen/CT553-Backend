@@ -1,4 +1,5 @@
 const prisma = require("../config/prismaClient");
+const bcrypt = require("bcrypt");
 const { BadRequest } = require("../response/error");
 
 class AccountService {
@@ -27,6 +28,28 @@ class AccountService {
 
     delete updatedAccount.password;
 
+    return updatedAccount;
+  }
+
+  static async changePassword(accountId, updatedData) {
+    const account = await prisma.account.findUnique({
+      where: { id: accountId },
+    });
+
+    const { password } = updatedData;
+    const matchedPassword = await bcrypt.compare(password, account.password);
+    if (matchedPassword) throw new BadRequest("Can not change into previous password");
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const updatedAccount = await prisma.account.update({
+      where: {
+        id: accountId,
+      },
+      data: { password: hashedPassword },
+      include: {
+        avatar: true,
+      },
+    });
     return updatedAccount;
   }
 

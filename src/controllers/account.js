@@ -10,7 +10,16 @@ class AccountController {
         +req.account.id,
         req.body
       ),
-    }).send(res); 
+    }).send(res);
+  }
+
+  static async changePassword(req, res) {
+    new OKResponse({
+      metadata: await AccountService.changePassword(
+        +req.account.id,
+        req.body
+      ),
+    }).send(res);
   }
 
   static async getAll(req, res) {
