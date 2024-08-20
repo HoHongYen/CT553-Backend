@@ -18,25 +18,26 @@ model UploadedImage {
   filename String @unique
 
   account Account?
+  category  Category?
 
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
 
   @@map("uploaded_images")
 }
 
 model Account {
-  id             Int            @id @default(autoincrement()) @map("account_id")
-  fullName       String         @map("full_name")
-  email          String         @unique
-  password       String
-  active         Boolean        @default(true)
+  id            Int            @id @default(autoincrement()) @map("account_id")
+  fullName      String         @map("full_name")
+  email         String         @unique
+  password      String
+  active        Boolean        @default(true)
   isGoogleLogin Boolean        @default(false)
-  phone          String?
-  gender         Boolean?
-  birthday       DateTime?      @db.Date
-  avatarId       Int?           @unique
-  avatar         UploadedImage? @relation(fields: [avatarId], references: [id])
+  phone         String?
+  gender        Boolean?
+  birthday      DateTime?      @db.Date
+  avatarId      Int?           @unique
+  avatar        UploadedImage? @relation(fields: [avatarId], references: [id])
 
   roleId Int  @default(3) @map("role_id")
   role   Role @relation(fields: [roleId], references: [id])
@@ -80,19 +81,23 @@ model Role {
   @@map("roles")
 }
 
-// model Category {
-//   id        Int        @id @default(autoincrement()) @map("category_id")
-//   name      String
-//   slug      String
-//   parentId  Int?       @map("parent_id")
-//   parent    Category?  @relation("categoryRelation", fields: [parentId], references: [id], onDelete: Cascade)
-//   children  Category[] @relation("categoryRelation")
-//   createdAt DateTime   @default(now()) @map("created_at")
-//   updatedAt DateTime   @updatedAt @map("updated_at")
-//   products  Product[]
+model Category {
+  id   Int    @id @default(autoincrement()) @map("category_id")
+  name String
+  slug String
 
-//   @@map("categories")
-// }
+  thumbnailImageId Int           @unique @map("thumbnail_image_id")
+  thumbnailImage   UploadedImage @relation(fields: [thumbnailImageId], references: [id], onDelete: Cascade)
+
+  parentId  Int?       @map("parent_id")
+  parent    Category?  @relation("categoryRelation", fields: [parentId], references: [id], onDelete: Cascade)
+  children  Category[] @relation("categoryRelation")
+  createdAt DateTime   @default(now()) @map("created_at")
+  updatedAt DateTime   @updatedAt @map("updated_at")
+  // products  Product[]
+
+  @@map("categories")
+}
 
 // model Color {
 //   id   Int    @id @default(autoincrement()) @map("color_id")

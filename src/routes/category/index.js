@@ -21,6 +21,7 @@ router.post(
   // permission([ADMIN, EMPLOYEE]),
   body("name").notEmpty().withMessage("Name is missing"),
   body("slug").notEmpty().withMessage("Slug is missing"),
+  body("thumbnailImageId").notEmpty().withMessage("ThumbnailImageId is missing"),
   body("parentId")
     .custom(existCategory)
     .withMessage("Parent category not found"),

@@ -1,11 +1,12 @@
 const prisma = require("../config/prismaClient");
 
 class CategoryService {
-  static async create({ name, parentId, slug }) {
+  static async create({ name, parentId, slug, thumbnailImageId }) {
     return await prisma.category.create({
       data: {
         name,
         parentId,
+        thumbnailImageId,
         slug,
       },
     });
@@ -18,6 +19,7 @@ class CategoryService {
         children: {
           include: {
             children: true,
+            thumbnailImage: true,
           },
           orderBy: {
             children: {
@@ -25,6 +27,7 @@ class CategoryService {
             },
           },
         },
+        thumbnailImage: true,
       },
     });
   }
@@ -35,7 +38,8 @@ class CategoryService {
       include: {
         children: {
           include: {
-            children: true
+            children: true,
+            thumbnailImage: true,
           },
         }
       }
@@ -50,7 +54,8 @@ class CategoryService {
       include: {
         children: {
           include: {
-            children: true
+            children: true,
+            thumbnailImage: true,
           },
         }
       }
@@ -63,9 +68,12 @@ class CategoryService {
         include: {
           children: {
             include: {
-              children: true
+              children: true,
+              thumbnailImage: true,
             },
-          }
+            thumbnailImage: true,
+          },
+          thumbnailImage: true,
         }
       });
     }
@@ -80,9 +88,12 @@ class CategoryService {
       include: {
         children: {
           include: {
-            children: true
+            children: true,
+            thumbnailImage: true,
           },
-        }
+          thumbnailImage: true,
+        },
+        thumbnailImage: true,
       }
     });
     while (category.parentId) {
