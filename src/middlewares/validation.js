@@ -121,7 +121,9 @@ const existProvince = async (provinceId, { req }) => {
   const provinces = await GiaoHangNhanhService.getProvinces();
 
   const foundProvince = provinces.find(
-    (province) => province.ProvinceID === provinceId
+    (province) => {
+      return province.ProvinceID === +provinceId
+    }
   );
 
   if (!foundProvince) throw new BadRequest("Province not found");
@@ -137,7 +139,7 @@ const existDistrictOfProvince = async (districtId, { req }) => {
   );
 
   const foundDistrict = districts.find(
-    (district) => district.DistrictID === districtId
+    (district) => district.DistrictID === +districtId
   );
 
   if (!foundDistrict) throw new BadRequest("District not found");
@@ -152,7 +154,9 @@ const existWardOfDistrict = async (wardCode, { req }) => {
     req.body.districtId
   );
 
-  const foundWard = wards.find((ward) => ward.WardCode === wardCode);
+  const foundWard = wards.find((ward) => {
+    return ward.WardCode === wardCode
+  });
 
   if (!foundWard) throw new BadRequest("Ward not found");
 

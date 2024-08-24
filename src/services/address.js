@@ -31,9 +31,9 @@ class AddressService {
     const newAddress = await prisma.address.create({
       data: {
         accountId,
-        provinceId,
-        districtId,
-        wardCode,
+        provinceId: +provinceId,
+        districtId: +districtId,
+        wardCode: wardCode,
         provinceName,
         districtName,
         wardName,
@@ -59,7 +59,21 @@ class AddressService {
   }
 
   static async updateById(addressId, accountId, updatedData) {
-    if (updatedData.isDefault) {
+
+    const {
+      provinceId,
+      districtId,
+      wardCode,
+      provinceName,
+      districtName,
+      wardName,
+      contactName,
+      contactPhone,
+      isDefault,
+      detailAddress,
+    } = updatedData;
+
+    if (isDefault) {
       await prisma.address.updateMany({
         where: {
           accountId,
@@ -72,9 +86,20 @@ class AddressService {
     }
     const updatedAddress = await prisma.address.update({
       where: {
-        id: addressId,
+        id: +addressId,
       },
-      data: updatedData,
+      data: {
+        provinceId: +provinceId,
+        districtId: +districtId,
+        wardCode: wardCode,
+        provinceName,
+        districtName,
+        wardName,
+        contactName,
+        contactPhone,
+        isDefault,
+        detailAddress,
+      },
     });
 
     return updatedAddress;
