@@ -29,7 +29,7 @@ class ProductController {
         page,
       }),
     }).send(res);
-  }
+  } 
 
   static async getOne(req, res) {
     new OKResponse({

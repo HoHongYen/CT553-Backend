@@ -46,7 +46,7 @@ class CategoryController {
     }).send(res);
   }
 
-  static async getBreadcumb(req, res) {
+  static async getBreadcrumb(req, res) {
     const subCategoryId = +req.query.fromCategoryId;
     const productSlug = req.query.fromProductSlug;
 
@@ -54,12 +54,12 @@ class CategoryController {
       throw new BadRequest("Invalid Request");
     }
 
-    const breadcumb = productSlug
-      ? await CategoryService.getBreadcumbFromProduct(productSlug)
-      : await CategoryService.getBreadcumbFromSubCategory(subCategoryId);
+    const breadcrumb = productSlug
+      ? await CategoryService.getBreadcrumbFromProduct(productSlug)
+      : await CategoryService.getBreadcrumbFromSubCategory(subCategoryId);
 
     new OKResponse({
-      metadata: breadcumb,
+      metadata: breadcrumb,
     }).send(res);
   }
 }

@@ -104,9 +104,11 @@ class CategoryService {
         include: {
           children: {
             include: {
-              children: true
+              children: true,
+              thumbnailImage: true,
             },
-          }
+          },
+          thumbnailImage: true,
         }
       });
     }
@@ -152,19 +154,19 @@ class CategoryService {
     return result;
   }
 
-  static async getBreadcumbFromSubCategory(subCategoryId) {
+  static async getBreadcrumbFromSubCategory(subCategoryId) {
     const subCategory = await prisma.category.findUnique({
       where: { id: subCategoryId },
     });
 
-    const breadcumb = [{ name: subCategory.name, slug: subCategory.slug }];
+    const breadcrumb = [{ name: subCategory.name, slug: subCategory.slug }];
 
     let parentCategoryId = subCategory.parentId;
     while (parentCategoryId) {
       const parentCategory = await prisma.category.findUnique({
         where: { id: parentCategoryId },
       });
-      breadcumb.unshift({
+      breadcrumb.unshift({
         name: parentCategory.name,
         slug: parentCategory.slug,
       });
@@ -172,21 +174,21 @@ class CategoryService {
       parentCategoryId = parentCategory.parentId;
     }
 
-    return breadcumb;
+    return breadcrumb;
   }
 
-  static async getBreadcumbFromProduct(productSlug) {
+  static async getBreadcrumbFromProduct(productSlug) {
     const foundProduct = await prisma.product.findUnique({
       where: { slug: productSlug },
     });
 
-    const breadcumb = await this.getBreadcumbFromSubCategory(
+    const breadcrumb = await this.getBreadcrumbFromSubCategory(
       foundProduct.categoryId
     );
 
-    breadcumb.push({ name: foundProduct.name, slug: foundProduct.slug });
+    breadcrumb.push({ name: foundProduct.name, slug: foundProduct.slug });
 
-    return breadcumb;
+    return breadcrumb;
   }
 }
 

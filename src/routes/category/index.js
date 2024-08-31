@@ -8,7 +8,7 @@ const { ADMIN, EMPLOYEE } = require("../../constant/roles");
 const router = require("express").Router();
 
 router.get("", asyncHandler(CategoryController.getAll));
-router.get("/breadcumb", asyncHandler(CategoryController.getBreadcumb));
+router.get("/breadcrumb", asyncHandler(CategoryController.getBreadcrumb));
 
 router.get("/:categoryId", asyncHandler(CategoryController.getOne));
 router.get("/parent/:categoryId", asyncHandler(CategoryController.getRootParent));
@@ -31,7 +31,7 @@ router.post(
 
 router.put(
   "/:id",
-  permission([ADMIN, EMPLOYEE]),
+  // permission([ADMIN, EMPLOYEE]),
   param("id").custom(existCategory),
   validate,
   asyncHandler(CategoryController.update)
@@ -39,7 +39,7 @@ router.put(
 
 router.delete(
   "/:id",
-  permission([ADMIN, EMPLOYEE]),
+  // permission([ADMIN, EMPLOYEE]),
   param("id").custom(existCategory),
   validate,
   asyncHandler(CategoryController.delete)

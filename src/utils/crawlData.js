@@ -5,7 +5,7 @@ const getProduct = async (url) => {
 
 	const browser = await puppeteer.launch();
 	const page = await browser.newPage();
-    await page.goto(url);
+    await page.goto(url,  {timeout: 0});
 	// await page.goto('https://tuongxinh.com.vn/san-pham/tranh-trang-guong-canh-hong-nghe-thuat-tg3338/', { waitUntil: 'networkidle2' });
 	// await page.goto('https://tuongxinh.com.vn/san-pham/tranh-led-dong-ho-long-vu-nghe-thuat-ld317/', { waitUntil: 'networkidle2' });
 	// await page.goto('https://tuongxinh.com.vn/san-pham/tranh-la-cay-xanh-nghe-thuat-trang-tri-phong-khach-tg3305/', { waitUntil: 'networkidle2' });
@@ -20,6 +20,7 @@ const getProduct = async (url) => {
 		price: "",
 		description: "",
 		image: "",
+		viewImage: "",
 		images: [],
 		specification: "",
 		size: []
@@ -55,6 +56,9 @@ const getProduct = async (url) => {
 
 	// get image
 	pictureData.image = $($('.woocommerce-product-gallery__image')).attr('data-thumb');
+
+	// get view image
+	pictureData.viewImage = $($('#popupDrag-bg > img')).attr('src');
 
 	// get images
 	tempArray = [];
