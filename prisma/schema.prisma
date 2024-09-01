@@ -17,8 +17,9 @@ model UploadedImage {
   path     String
   filename String @unique
 
-  account  Account?
-  category Category?
+  account       Account?
+  category      Category?
+  productImages ProductImage[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -94,7 +95,7 @@ model Category {
   children  Category[] @relation("categoryRelation")
   createdAt DateTime   @default(now()) @map("created_at")
   updatedAt DateTime   @updatedAt @map("updated_at")
-  // products  Product[]
+  products  Product[]
 
   @@map("categories")
 }
@@ -126,64 +127,58 @@ model Category {
 //   @@map("sizes")
 // }
 
-// model ProductImage {
-//   id        Int @id @default(autoincrement()) @map("product_image_id")
-//   imageId   Int @map("image_id")
-//   productId Int @map("product_id")
+model ProductImage {
+  id        Int @id @default(autoincrement()) @map("product_image_id")
+  imageId   Int @map("image_id")
+  productId Int @map("product_id")
 
-//   image   UploadedImage @relation(fields: [imageId], references: [id], onDelete: Cascade)
-//   product Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  image   UploadedImage @relation(fields: [imageId], references: [id], onDelete: Cascade)
+  product Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
 
-//   color Color?
+  @@unique([imageId, productId])
+  @@map("product_images")
+}
 
-//   @@unique([imageId, productId])
-//   @@map("product_images")
-// }
+model Product {
+  id          Int            @id @default(autoincrement()) @map("product_id")
+  name        String
+  visible     Boolean        @default(true)
+  description String
+  overview    String
+  material    String
+  specification String
+  instruction String
+  slug        String         @unique
+  soldNumber  Int            @default(0)
+  categoryId  Int?           @map("category_id")
+  category    Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  createdAt   DateTime       @default(now()) @map("created_at")
+  updatedAt   DateTime       @updatedAt @map("updated_at")
+  variants    Variant[]
+  images      ProductImage[]
+  // productDiscount        ProductDiscount[]
+  // productImageEmbeddings ProductImageEmbeddings[]
 
-// model Product {
-//   id                     Int                      @id @default(autoincrement()) @map("product_id")
-//   name                   String
-//   price                  Float
-//   visible                Boolean                  @default(true)
-//   description            String
-//   overview               String
-//   material               String
-//   instruction            String
-//   slug                   String                   @unique
-//   soldNumber             Int                      @default(0)
-//   categoryId             Int?                     @map("category_id")
-//   category               Category?                @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-//   createdAt              DateTime                 @default(now()) @map("created_at")
-//   updatedAt              DateTime                 @updatedAt @map("updated_at")
-//   variants               Variant[]
-//   images                 ProductImage[]
-//   colors                 Color[]
-//   productDiscount        ProductDiscount[]
-//   productImageEmbeddings ProductImageEmbeddings[]
+  // productEmbedding ProductEmbeddings?
 
-//   productEmbedding ProductEmbeddings?
+  @@map("products")
+}
 
-//   @@map("products")
-// }
+model Variant {
+  id        Int    @id @default(autoincrement()) @map("variant_id")
+  price     Float
+  size      String
+  quantity  Int
+  productId Int    @map("product_id")
 
-// model Variant {
-//   id        Int @id @default(autoincrement()) @map("variant_id")
-//   quantity  Int
-//   colorId   Int @map("color_id")
-//   sizeId    Int @map("size_id")
-//   productId Int @map("product_id")
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
-//   color   Color   @relation(fields: [colorId], references: [id], onDelete: Cascade)
-//   size    Size    @relation(fields: [sizeId], references: [id], onDelete: Cascade)
-//   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  // OrderDetail OrderDetail[]
 
-//   createdAt   DateTime      @default(now()) @map("created_at")
-//   updatedAt   DateTime      @updatedAt @map("updated_at")
-//   OrderDetail OrderDetail[]
-
-//   @@unique([productId, colorId, sizeId])
-//   @@map("variants")
-// }
+  @@map("variants")
+}
 
 model PaymentMethod {
   id   Int    @id @default(autoincrement()) @map("payment_method_id")

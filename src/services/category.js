@@ -71,7 +71,6 @@ class CategoryService {
               children: true,
               thumbnailImage: true,
             },
-            thumbnailImage: true,
           },
           thumbnailImage: true,
         }
@@ -91,7 +90,6 @@ class CategoryService {
             children: true,
             thumbnailImage: true,
           },
-          thumbnailImage: true,
         },
         thumbnailImage: true,
       }
@@ -112,12 +110,9 @@ class CategoryService {
         }
       });
     }
-    let res = [categoryId];
+    let res = [];
     category.children.forEach((child) => {
-      res.push(child.id);
-      child.children?.forEach((child2) => {
-        res.push(child2.id);
-      });
+      res.push(child);
     });
     return res;
   }

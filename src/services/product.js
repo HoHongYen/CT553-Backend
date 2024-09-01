@@ -55,8 +55,8 @@ const commonIncludeOptionsInProduct = {
 class ProductService {
   // crawl
   static async crawl({ url }) {
-      const productData = await getProduct(url);
-      return productData;
+    const productData = await getProduct(url);
+    return productData;
   }
   static async create({ uploadedImageIds, ...data }) {
     const newProduct = await prisma.$transaction(async (tx) => {
@@ -98,31 +98,23 @@ class ProductService {
             image: true,
           },
         },
-        colors: {
-          include: {
-            thumbnailImage: true,
-            productImage: {
-              include: {
-                image: true,
-              },
-            },
-          },
-        },
         variants: {
           select: {
+            size: true,
+            price: true,
             quantity: true,
           },
         },
-        productDiscount: {
-          where: {
-            startDate: {
-              lte: new Date().toISOString(),
-            },
-            endDate: {
-              gte: new Date().toISOString(),
-            },
-          },
-        },
+        // productDiscount: {
+        //   where: {
+        //     startDate: {
+        //       lte: new Date().toISOString(),
+        //     },
+        //     endDate: {
+        //       gte: new Date().toISOString(),
+        //     },
+        //   },
+        // },
       },
       take: limit,
     };
@@ -141,6 +133,7 @@ class ProductService {
     const totalPages = Math.ceil(count / limit);
 
     const products = await prisma.product.findMany({ ...query, skip: offset });
+
     query;
     return {
       products,
@@ -161,55 +154,29 @@ class ProductService {
           images: {
             include: {
               image: true,
-              color: {
-                select: {
-                  id: true,
-                },
-              },
             },
           },
           variants: {
             include: {
-              color: {
-                include: {
-                  productImage: {
-                    include: {
-                      image: {
-                        select: {
-                          path: true,
-                        },
-                      },
-                    },
-                  },
-                  thumbnailImage: {
-                    select: {
-                      path: true,
-                    },
-                  },
-                },
-              },
               size: true,
+              price: true,
+              quantity: true,
             },
           },
-          colors: {
-            include: {
-              thumbnailImage: true,
-            },
-          },
-          productDiscount: {
-            where: {
-              startDate: {
-                lte: new Date().toISOString(),
-              },
-              endDate: {
-                gte: new Date().toISOString(),
-              },
-            },
-          },
+          // productDiscount: {
+          //   where: {
+          //     startDate: {
+          //       lte: new Date().toISOString(),
+          //     },
+          //     endDate: {
+          //       gte: new Date().toISOString(),
+          //     },
+          //   },
+          // },
         },
       }),
       prisma.variant.findMany({
-        distinct: ["sizeId"],
+        distinct: ["size"],
         where: {
           productId,
         },
@@ -235,34 +202,24 @@ class ProductService {
         images: {
           include: {
             image: true,
-            color: {
-              select: {
-                id: true,
-              },
-            },
           },
         },
         variants: true,
-        colors: {
-          include: {
-            thumbnailImage: true,
-          },
-        },
-        productDiscount: {
-          where: {
-            startDate: {
-              lte: new Date().toISOString(),
-            },
-            endDate: {
-              gte: new Date().toISOString(),
-            },
-          },
-        },
+        // productDiscount: {
+        //   where: {
+        //     startDate: {
+        //       lte: new Date().toISOString(),
+        //     },
+        //     endDate: {
+        //       gte: new Date().toISOString(),
+        //     },
+        //   },
+        // },
       },
     });
 
     const productSizes = await prisma.variant.findMany({
-      distinct: ["sizeId"],
+      distinct: ["size"],
       where: {
         productId: product.id,
       },
@@ -463,11 +420,10 @@ class ProductService {
         limit = 10 - recommendProductIds.length;
       }
       const productEmbedding = productEmbeddings[productEmbeddingIndex];
-      let result = await prisma.$queryRaw`SELECT 1 - (embedding <=> ${
-        productEmbedding.embedding
-      }::vector) AS cosine_similarity, product_id FROM product_embeddings WHERE product_id NOT IN (${Prisma.join(
-        excludedProductIds
-      )}) ORDER BY cosine_similarity DESC LIMIT ${limit};`;
+      let result = await prisma.$queryRaw`SELECT 1 - (embedding <=> ${productEmbedding.embedding
+        }::vector) AS cosine_similarity, product_id FROM product_embeddings WHERE product_id NOT IN (${Prisma.join(
+          excludedProductIds
+        )}) ORDER BY cosine_similarity DESC LIMIT ${limit};`;
 
       for (let item of result) {
         recommendProductIds.push(item.product_id);
