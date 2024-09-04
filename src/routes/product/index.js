@@ -68,14 +68,14 @@ router.post(
   asyncHandler(ProductController.crawl)
 )
 
-router.use(authentication);
+// router.use(authentication);
 
 router.post(
   "",
   // permission([ADMIN, EMPLOYEE]),
   body("name").notEmpty().withMessage("Name is missing"),
-  body("price").notEmpty().withMessage("Price is missing"),
-  body("description").notEmpty().withMessage("Description is missing"),
+  // body("price").notEmpty().withMessage("Price is missing"),
+  body("specification").notEmpty().withMessage("Specification is missing"),
   body("material").notEmpty().withMessage("Material is missing"),
   body("overview").notEmpty().withMessage("Overview is missing"),
   body("instruction").notEmpty().withMessage("Instruction is missing"),

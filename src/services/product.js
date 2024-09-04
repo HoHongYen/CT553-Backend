@@ -64,7 +64,7 @@ class ProductService {
         data: {
           ...data,
           slug: slugify(
-            data.name + "-" + new Date().getTime() + "-" + Math.random(),
+            data.slug + new Date().getTime() + "-" + Math.random(),
             {
               lower: true,
             }
@@ -204,7 +204,7 @@ class ProductService {
             image: true,
           },
         },
-        variants: true,
+        variants: true
         // productDiscount: {
         //   where: {
         //     startDate: {

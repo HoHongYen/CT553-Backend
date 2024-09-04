@@ -143,7 +143,6 @@ model Product {
   id          Int            @id @default(autoincrement()) @map("product_id")
   name        String
   visible     Boolean        @default(true)
-  description String
   overview    String
   material    String
   specification String

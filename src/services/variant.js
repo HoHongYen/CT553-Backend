@@ -1,13 +1,12 @@
 const prisma = require("../config/prismaClient");
 
 class VariantService {
-  static async create(productId, { colorId, sizeId, thumbnail, quantity }) {
+  static async create(productId, { size, price, quantity }) {
     return await prisma.variant.create({
       data: {
         productId,
-        colorId,
-        sizeId,
-        thumbnail,
+        size,
+        price,
         quantity,
       },
     });
