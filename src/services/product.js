@@ -63,12 +63,12 @@ class ProductService {
       const createdProduct = await tx.product.create({
         data: {
           ...data,
-          slug: slugify(
-            data.slug + new Date().getTime() + "-" + Math.random(),
-            {
-              lower: true,
-            }
-          ),
+          // slug: slugify(
+          //   data.slug + new Date().getTime() + "-" + Math.random(),
+          //   {
+          //     lower: true,
+          //   }
+          // ),
         },
       });
 
