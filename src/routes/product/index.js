@@ -92,8 +92,14 @@ router.put(
   "/:id",
   // permission([ADMIN, EMPLOYEE]),
   param("id").custom(existProduct),
+  body("categoryId").custom(existCategory),
+  asyncHandler(ProductController.update),
+  body("uploadedImageIds")
+    .notEmpty()
+    .isArray()
+    .withMessage("uploadedImageIds should be an array"),
   validate,
-  asyncHandler(ProductController.update)
+
 );
 
 router.delete(

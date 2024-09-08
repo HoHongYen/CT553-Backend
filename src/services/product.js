@@ -98,13 +98,7 @@ class ProductService {
             image: true,
           },
         },
-        variants: {
-          select: {
-            size: true,
-            price: true,
-            quantity: true,
-          },
-        },
+        variants: true
         // productDiscount: {
         //   where: {
         //     startDate: {
@@ -156,13 +150,7 @@ class ProductService {
               image: true,
             },
           },
-          variants: {
-            include: {
-              size: true,
-              price: true,
-              quantity: true,
-            },
-          },
+          variants: true,
           // productDiscount: {
           //   where: {
           //     startDate: {
@@ -179,9 +167,6 @@ class ProductService {
         distinct: ["size"],
         where: {
           productId,
-        },
-        select: {
-          size: true,
         },
       }),
     ]);

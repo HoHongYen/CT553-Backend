@@ -49,18 +49,15 @@ class VariantService {
     });
   }
 
-  static async update(productId, { colorId, sizeId, quantity, thumbnail }) {
+  static async update({ id, size, price, quantity }) {
     return await prisma.variant.update({
       where: {
-        productId_colorId_sizeId: {
-          productId,
-          colorId,
-          sizeId,
-        },
+        id,
       },
       data: {
+        size,
+        price,
         quantity,
-        thumbnail,
       },
     });
   }

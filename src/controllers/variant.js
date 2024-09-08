@@ -16,7 +16,7 @@ class VariantController {
 
   static async update(req, res) {
     new OKResponse({
-      metadata: await VariantService.update(+req.params.productId, req.body),
+      metadata: await VariantService.update(req.body),
     }).send(res);
   }
 
