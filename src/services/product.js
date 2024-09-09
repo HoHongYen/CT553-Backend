@@ -59,16 +59,11 @@ class ProductService {
     return productData;
   }
   static async create({ uploadedImageIds, ...data }) {
+    console.log("product service", data);
     const newProduct = await prisma.$transaction(async (tx) => {
       const createdProduct = await tx.product.create({
         data: {
           ...data,
-          // slug: slugify(
-          //   data.slug + new Date().getTime() + "-" + Math.random(),
-          //   {
-          //     lower: true,
-          //   }
-          // ),
         },
       });
 
@@ -98,7 +93,10 @@ class ProductService {
             image: true,
           },
         },
-        variants: true
+        thumbnailImage: true,
+        viewImage: true,
+        variants: true,
+
         // productDiscount: {
         //   where: {
         //     startDate: {

@@ -74,12 +74,13 @@ router.post(
   "",
   // permission([ADMIN, EMPLOYEE]),
   body("name").notEmpty().withMessage("Name is missing"),
-  // body("price").notEmpty().withMessage("Price is missing"),
   body("specification").notEmpty().withMessage("Specification is missing"),
   body("material").notEmpty().withMessage("Material is missing"),
   body("overview").notEmpty().withMessage("Overview is missing"),
   body("instruction").notEmpty().withMessage("Instruction is missing"),
   body("categoryId").custom(existCategory),
+  body("thumbnailImageId").custom(existUploadedImage),
+  body("viewImageId").custom(existUploadedImage),
   body("uploadedImageIds")
     .isArray()
     .withMessage("uploadedImageIds should be an array"),
@@ -121,6 +122,13 @@ router.post(
   asyncHandler(ProductController.addImage)
 );
 
+router.delete(
+  "/delete-image/:imageId",
+  param("imageId").custom(existProductImage),
+  validate,
+  asyncHandler(ProductController.deleteImage)
+);
+
 router.post(
   "/:id/discount",
   param("id").custom(existProduct),
@@ -149,12 +157,5 @@ router.post(
   validate,
   asyncHandler(ProductController.createDiscount)
 );
-
-// router.delete(
-//   "/delete-image/:imageId",
-//   param("imageId").custom(existProductImage),
-//   validate,
-//   asyncHandler(ProductController.deleteImage)
-// );
 
 module.exports = router;
