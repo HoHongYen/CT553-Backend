@@ -22,7 +22,7 @@ class VariantController {
 
   static async delete(req, res) {
     new OKResponse({
-      metadata: await VariantService.delete(+req.params.productId, req.body),
+      metadata: await VariantService.delete(+req.params.id),
     }).send(res);
   }
 }

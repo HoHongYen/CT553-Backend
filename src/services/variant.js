@@ -62,14 +62,10 @@ class VariantService {
     });
   }
 
-  static async delete(productId, { colorId, sizeId }) {
-    await prisma.variant.delete({
+  static async delete(id) {
+    return await prisma.variant.delete({
       where: {
-        productId_colorId_sizeId: {
-          productId,
-          colorId: +colorId,
-          sizeId: +sizeId,
-        },
+        id
       },
     });
   }

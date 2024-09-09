@@ -80,19 +80,17 @@ const existUploadedImage = async (uploadedImageId) => {
   if (!foundImage) throw new BadRequest("Uploaded image not found");
 };
 
-const existVariant = async (productId, { req }) => {
-  if (!req.body.sizeId || !req.body.colorId) return true;
-  const foundVariant = await prisma.variant.findUnique({
-    where: {
-      productId_colorId_sizeId: {
-        productId: +productId,
-        colorId: +req.body.colorId,
-        sizeId: +req.body.sizeId,
-      },
-    },
-  });
-
-  if (!foundVariant) throw new BadRequest("Variant not found");
+const existVariant = async (id) => {
+  // console.log("validation id", id);
+  // if (!Number.parseInt(id)) {
+  //   console.log("validation not found");
+  //   throw new BadRequest("Variant not found");
+  // }
+  // const foundVariant = await prisma.variant.findUnique({
+  //   where: { id },
+  // });
+  // console.log("validation foundVariant", foundVariant);
+  // if (!foundVariant) throw new BadRequest("Variant not found");
 };
 
 const existProvince = async (provinceId, { req }) => {

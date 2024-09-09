@@ -38,14 +38,15 @@ router.put(
 );
 
 router.delete(
-  "/",
+  "/:id",
   // permission([ADMIN, EMPLOYEE]),
-  // body("sizeId").notEmpty().withMessage("Size id is missing").custom(existSize),
+  // body("id").notEmpty().withMessage("Variant id is missing").custom(existVariant),
   // body("colorId")
   //   .notEmpty()
   //   .withMessage("Color id is missing")
   //   .custom(existColor),
-  param("productId").custom(existProduct).custom(existVariant),
+  param("productId").custom(existProduct),
+  // param("id").custom(existVariant),
   validate,
   asyncHandler(VariantController.delete)
 );
