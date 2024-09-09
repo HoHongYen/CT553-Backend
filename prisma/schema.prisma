@@ -21,6 +21,9 @@ model UploadedImage {
   category      Category?
   productImages ProductImage[]
 
+  thumbnailImageOfProduct Product? @relation("ThumbnailImage") 
+  viewImageOfProduct      Product? @relation("ViewImage") 
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -37,7 +40,7 @@ model Account {
   phone         String?
   gender        Boolean?
   birthday      DateTime?      @db.Date
-  avatarId      Int?           @unique
+  avatarId      Int?           @unique @map("avatar_id")
   avatar        UploadedImage? @relation(fields: [avatarId], references: [id])
 
   roleId Int  @default(3) @map("role_id")
@@ -140,21 +143,28 @@ model ProductImage {
 }
 
 model Product {
-  id          Int            @id @default(autoincrement()) @map("product_id")
-  name        String
-  visible     Boolean        @default(true)
-  overview    String
-  material    String
+  id            Int            @id @default(autoincrement()) @map("product_id")
+  name          String
+  visible       Boolean        @default(true)
+  overview      String
+  material      String
   specification String
-  instruction String
-  slug        String         @unique
-  soldNumber  Int            @default(0)
-  categoryId  Int?           @map("category_id")
-  category    Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  createdAt   DateTime       @default(now()) @map("created_at")
-  updatedAt   DateTime       @updatedAt @map("updated_at")
-  variants    Variant[]
-  images      ProductImage[]
+  instruction   String
+  slug          String         @unique
+  soldNumber    Int            @default(0)
+  categoryId    Int?           @map("category_id")
+  category      Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  variants      Variant[]
+  images        ProductImage[]
+
+  thumbnailImageId Int           @unique @map("thumbnail_image_id")
+  thumbnailImage   UploadedImage @relation("ThumbnailImage", fields: [thumbnailImageId], references: [id], onDelete: Cascade)
+
+  viewImageId Int           @unique @map("view_image_id")
+  viewImage   UploadedImage @relation("ViewImage", fields: [viewImageId], references: [id], onDelete: Cascade)
+
   // productDiscount        ProductDiscount[]
   // productImageEmbeddings ProductImageEmbeddings[]
 
@@ -200,7 +210,7 @@ model PaymentStatus {
 model Payment {
   id              Int   @id @default(autoincrement()) @map("payment_id")
   amount          Float
-  paymentStatusId Int
+  paymentStatusId Int   @map("payment_status_id")
   paymentMethodId Int   @map("payment_method_id")
   orderId         Int   @unique @map("order_id")
 

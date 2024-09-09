@@ -46,6 +46,12 @@ class CategoryService {
     });
   }
 
+  static async getOneBySlug(slug) {
+    return await prisma.category.findFirst({
+      where: { slug: slug },
+    });
+  }
+
   static async getRootParent(categoryId) {
     let result = await prisma.category.findUnique({
       where: {
