@@ -84,7 +84,7 @@ router.post(
   body("uploadedImageIds")
     .isArray()
     .withMessage("uploadedImageIds should be an array"),
-
+  body("variants").isArray().withMessage("Variants should be an array"),
   validate,
   asyncHandler(ProductController.create)
 );

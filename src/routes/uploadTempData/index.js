@@ -1,5 +1,6 @@
 const { uploadRoles, uploadPaymentMethods, uploadPaymentStatuses } = require("../../services/uploadTempData/basic");
-const { uploadParentCategories, uploadChildrenCategories, deleteCategories, deleteImages } = require("../../services/uploadTempData/categories");
+const { uploadParentCategories, uploadChildrenCategories } = require("../../services/uploadTempData/categories");
+const { deleteCategories, deleteImages, deleteProducts } = require("../../services/uploadTempData/delete");
 
 const router = require("express").Router();
 
@@ -14,8 +15,8 @@ router.post(
 
 router.post(
   "/categories", (req, res) => {
-    // uploadParentCategories();
-    uploadChildrenCategories();
+    uploadParentCategories();
+    // uploadChildrenCategories();
     res.send("Categories uploaded successfully");
   }
 );
@@ -31,6 +32,13 @@ router.delete(
   "/uploads", (req, res) => {
     deleteImages();
     res.send("Uploaded images deleted successfully");
+  }
+)
+
+router.delete(
+  "/products", (req, res) => {
+    deleteProducts();
+    res.send("Products deleted successfully");
   }
 )
 

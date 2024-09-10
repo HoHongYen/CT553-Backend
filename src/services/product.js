@@ -58,13 +58,22 @@ class ProductService {
     const productData = await getProduct(url);
     return productData;
   }
-  static async create({ uploadedImageIds, ...data }) {
+  static async create({ uploadedImageIds, variants, ...data }) {
     console.log("product service", data);
     const newProduct = await prisma.$transaction(async (tx) => {
       const createdProduct = await tx.product.create({
         data: {
           ...data,
         },
+      });
+
+      await tx.variant.createMany({
+        data: variants.map((variant) => ({
+          size: variant.size,
+          price: +variant.price,
+          quantity: +variant.quantity,
+          productId: createdProduct.id,
+        })),
       });
 
       await tx.productImage.createMany({
@@ -148,6 +157,8 @@ class ProductService {
               image: true,
             },
           },
+          thumbnailImage: true,
+          viewImage: true,
           variants: true,
           // productDiscount: {
           //   where: {
@@ -187,6 +198,8 @@ class ProductService {
             image: true,
           },
         },
+        thumbnailImage: true,
+        viewImage: true,
         variants: true
         // productDiscount: {
         //   where: {

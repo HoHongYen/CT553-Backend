@@ -48,8 +48,34 @@ const changeImageUrlToFile = async (imgUrl) => {
   return file;
 }
 
+const getUploadedImageId = async (form) => {
+  const uploadedImageId = fetch(`http://localhost:5000/api/upload/image`, {
+    method: "POST",
+    body: form
+  }).then(function (a) {
+    return a.json(); // call the json method on the response to get JSON
+  }).then(function (res) {
+    const uploadedImageId = res.metadata.id;
+    return uploadedImageId;
+    // const uploadedCategory = await prisma.category.create({
+    //   data: {
+    //     name: category.name,
+    //     slug: getSlug(category.name),
+    //     parentId: category.parentId,
+    //     thumbnailImageId: uploadedImageId,
+    //   },
+    // });
+    // console.log("Uploaded category: ", uploadedCategory);
+
+  });
+  console.log("Uploaded image id: ", uploadedImageId);
+  return uploadedImageId;
+}
+
+
 module.exports = {
   sortObject,
   getGenderFromQuery,
-  changeImageUrlToFile
+  changeImageUrlToFile,
+  getUploadedImageId
 };

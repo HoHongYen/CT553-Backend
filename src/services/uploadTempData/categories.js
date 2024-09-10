@@ -229,14 +229,4 @@ async function uploadCategory(category) {
     })
 }
 
-async function deleteCategories() {
-    const deleteCategories = await prisma.category.deleteMany()
-    return deleteCategories;
-}
-
-async function deleteImages() {
-    const deleteImages = await prisma.uploadedImage.deleteMany()
-    return deleteImages;
-}
-
-module.exports = { uploadParentCategories, uploadChildrenCategories, deleteCategories, deleteImages };
+module.exports = { uploadParentCategories, uploadChildrenCategories };
