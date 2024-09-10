@@ -33,7 +33,23 @@ async function getGenderFromQuery(query) {
   return null;
 }
 
+const getUrlExtension = (url) => {
+  return url.split(/[#?]/)[0].split(".").pop().trim();
+};
+
+const changeImageUrlToFile = async (imgUrl) => {
+  var imgExt = getUrlExtension(imgUrl);
+
+  const response = await fetch(imgUrl);
+  const blob = await response.blob();
+  const file = new File([blob], "categoryImage." + imgExt, {
+    type: blob.type,
+  });
+  return file;
+}
+
 module.exports = {
   sortObject,
   getGenderFromQuery,
+  changeImageUrlToFile
 };

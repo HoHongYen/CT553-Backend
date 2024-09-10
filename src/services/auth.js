@@ -3,6 +3,8 @@ const bcrypt = require("bcrypt");
 const { BadRequest } = require("../response/error");
 const { generatePairTokens } = require("../utils/generateToken");
 const { ADMIN, EMPLOYEE, getRole } = require("../constant/roles");
+const { changeImageUrlToFile } = require("../utils/index");
+
 class AuthService {
   static async register({
     fullName,
@@ -45,7 +47,7 @@ class AuthService {
     return generateToken(account);
   }
 
-  static async loginWithGoogle({ email, fullName, phone, avatarId }) {
+  static async loginWithGoogle({ email, fullName, phone, avatarURL }) {
     let account = await prisma.account.findUnique({
       where: { email },
       include: {
@@ -55,29 +57,44 @@ class AuthService {
       },
     });
 
+    if (account) return generateToken(account);
+
     // create account
-    if (!account) {
-      const newAccount = await prisma.account.create({
-        data: {
-          fullName,
-          email,
-          password: "",
-          phone,
-          gender: true,
-          birthday: null,
-          avatarId,
-          isGoogleLogin: true,
+    const form = new FormData();
+    const file = await changeImageUrlToFile(avatarURL);
+    form.append("image", file);
+
+    const uploadedImageId = await fetch(`http://localhost:5000/api/upload/image`, {
+      method: "POST",
+      body: form
+    }).then(function (a) {
+      return a.json(); // call the json method on the response to get JSON
+    }).then(function (res) {
+      return res.metadata.id;
+    })
+
+    await prisma.account.create({
+      data: {
+        fullName,
+        email,
+        password: "",
+        phone,
+        gender: true,
+        birthday: null,
+        avatarId: uploadedImageId,
+        isGoogleLogin: true,
+      },
+    });
+    
+    account = await prisma.account.findUnique({
+      where: { email },
+      include: {
+        role: {
+          select: { role: true },
         },
-      });
-      account = await prisma.account.findUnique({
-        where: { email: newAccount.email },
-        include: {
-          role: {
-            select: { role: true },
-          },
-        },
-      });
-    }
+      },
+    });
+
     return generateToken(account);
   }
 

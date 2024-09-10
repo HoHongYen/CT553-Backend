@@ -1,6 +1,7 @@
 const { default: slugify } = require("slugify");
 const prisma = require("../../config/prismaClient");
 const { getOneBySlug } = require("../category");
+const { changeImageUrlToFile } =  require("../../utils/index");
 
 const getSlug = (name) => slugify(name, { lower: true, locale: "vi" });
 
@@ -161,21 +162,6 @@ const children6Categories = [
     },
 ]
 
-const getUrlExtension = (url) => {
-    return url.split(/[#?]/)[0].split(".").pop().trim();
-};
-
-const changeImageUrlToFile = async (imgUrl) => {
-    var imgExt = getUrlExtension(imgUrl);
-
-    const response = await fetch(imgUrl);
-    const blob = await response.blob();
-    const file = new File([blob], "categoryImage." + imgExt, {
-        type: blob.type,
-    });
-    return file;
-}
-
 async function uploadParentCategories() {
     for (const category of parentCategories) {
         await uploadCategory({ ...category, parentId: null });
@@ -222,7 +208,7 @@ async function uploadCategory(category) {
 
     // const uploadedImage = await uploadImage(form);
 
-    const res = fetch(`http://localhost:5000/api/upload/image`, {
+    fetch(`http://localhost:5000/api/upload/image`, {
         method: "POST",
         body: form
     }).then(function (a) {
