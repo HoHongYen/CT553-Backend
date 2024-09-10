@@ -265,13 +265,20 @@ class ProductService {
   }
 
   static async deleteImage(productImageId, filename) {
+
+    const productImage = await prisma.productImage.findUnique({
+      where: {
+        id: productImageId,
+      },
+    });
+
     await Promise.all([
       prisma.productImage.delete({
         where: {
           id: productImageId,
         },
       }),
-      UploadService.destroyImage(productImageId),
+      UploadService.destroyImage(productImage.imageId),
     ]);
   }
 
