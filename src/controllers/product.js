@@ -19,6 +19,9 @@ class ProductController {
         limit: +req.query.limit,
         productIds: req.query.productIds,
         page,
+        filter: req.query.filter,
+        filterMinPrice: +req.query.filterMinPrice,
+        filterMaxPrice: +req.query.filterMaxPrice,
       }),
     }).send(res);
   } 
