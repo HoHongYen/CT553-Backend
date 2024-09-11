@@ -14,10 +14,10 @@ const {
   generateEmbeddingsFromTextV2,
   generateEmbeddingsFromImageUrl,
 } = require("../utils/generateEmbeddings");
-const { getGenderFromQuery } = require("../utils");
+const { getGenderFromQuery, getUploadedImageId, getUploadedImageIds } = require("../utils");
 const { Prisma } = require("@prisma/client");
 const { getQueryObjectBasedOnFilters } = require("../utils/product");
-const { getProduct } = require("../utils/crawlData");
+const { getProduct, getAllProductLinks } = require("./uploadTempData/crawlData");
 
 const commonIncludeOptionsInProduct = {
   images: {
@@ -54,10 +54,86 @@ const commonIncludeOptionsInProduct = {
 
 class ProductService {
   // crawl
-  static async crawl({ url }) {
+  static async crawl({ url, categorySlug }) {
     const productData = await getProduct(url);
-    return productData;
+
+    const findProduct = await prisma.product.findFirst({
+      where: {
+        name: productData.name,
+      },
+    });
+
+    if (findProduct) {
+      return `Product ${productData.name} already exists`;
+    }
+
+    console.log("productData", productData);
+
+    // get category
+    const category = await CategoryService.getOneBySlug(categorySlug);
+
+    // upload thumbnail image
+    const thumbnailImageId = await getUploadedImageId(productData.thumbnailImage);
+    console.log("thumbnailImageId", thumbnailImageId);
+
+    // upload view image
+    const viewImageId = await getUploadedImageId(productData.viewImage);
+    console.log("viewImageId", viewImageId);
+
+    // upload images
+    const uploadedImageIds = await getUploadedImageIds(productData.images);
+    console.log("uploadedImageIds", uploadedImageIds);
+
+    // create product
+    const newProduct = await prisma.$transaction(async (tx) => {
+      const createdProduct = await tx.product.create({
+        data: {
+          name: productData.name,
+          overview: productData.overview,
+          specification: productData.specification,
+          material: productData.material,
+          instruction: productData.instruction,
+          categoryId: category.id,
+          thumbnailImageId,
+          viewImageId,
+          slug: slugify(productData.name, { lower: true }),
+        },
+      });
+
+      await tx.variant.createMany({
+        data: productData.variants.map((variant) => ({
+          size: variant.size,
+          price: variant.price,
+          quantity: 10,
+          productId: createdProduct.id,
+        })),
+      });
+
+      await tx.productImage.createMany({
+        data: uploadedImageIds.map((uploadedImageId) => ({
+          imageId: uploadedImageId,
+          productId: createdProduct.id,
+        })),
+      });
+      return createdProduct;
+    });
+
+    return newProduct;
   }
+
+  static async crawlMany({ categorySlug, urls }) {
+    return await Promise.all(
+      urls.map(async (url) => {
+        return await ProductService.crawl({ url, categorySlug });
+      })
+    );
+  }
+
+  static async crawlCategory({ url }) {
+    const links = await getAllProductLinks(url);
+    return await ProductService.crawlMany({ categorySlug: "tranh-tre-em", urls: links });
+  }
+
   static async create({ uploadedImageIds, variants, ...data }) {
     console.log("product service", data);
     const newProduct = await prisma.$transaction(async (tx) => {

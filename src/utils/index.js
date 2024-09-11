@@ -48,8 +48,12 @@ const changeImageUrlToFile = async (imgUrl) => {
   return file;
 }
 
-const getUploadedImageId = async (form) => {
-  const uploadedImageId = fetch(`http://localhost:5000/api/upload/image`, {
+const getUploadedImageId = async (imageUrl) => {
+  const form = new FormData();
+  const file = await changeImageUrlToFile(imageUrl);
+  form.append("image", file);
+
+  const uploadedImageId = await fetch(`http://localhost:5000/api/upload/image`, {
     method: "POST",
     body: form
   }).then(function (a) {
@@ -57,25 +61,33 @@ const getUploadedImageId = async (form) => {
   }).then(function (res) {
     const uploadedImageId = res.metadata.id;
     return uploadedImageId;
-    // const uploadedCategory = await prisma.category.create({
-    //   data: {
-    //     name: category.name,
-    //     slug: getSlug(category.name),
-    //     parentId: category.parentId,
-    //     thumbnailImageId: uploadedImageId,
-    //   },
-    // });
-    // console.log("Uploaded category: ", uploadedCategory);
-
   });
-  console.log("Uploaded image id: ", uploadedImageId);
   return uploadedImageId;
 }
 
+const getUploadedImageIds = async (imageUrls) => {
+  const form = new FormData();
+  await Promise.all(imageUrls.map(async (image) => {
+    const file = await changeImageUrlToFile(image);
+    form.append("images", file);
+  }));
+
+  const uploadedImageIds = await fetch(`http://localhost:5000/api/upload/images`, {
+    method: "POST",
+    body: form
+  }).then(function (a) {
+    return a.json(); // call the json method on the response to get JSON
+  }).then(function (res) {
+    const uploadedImageIds = res.metadata.map((image) => image.id);
+    return uploadedImageIds;
+  });
+  return uploadedImageIds;
+}
 
 module.exports = {
   sortObject,
   getGenderFromQuery,
   changeImageUrlToFile,
-  getUploadedImageId
+  getUploadedImageId,
+  getUploadedImageIds,
 };
