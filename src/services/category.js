@@ -18,7 +18,11 @@ class CategoryService {
       include: {
         children: {
           include: {
-            children: true,
+            parent: {
+              select: {
+                slug: true,
+              }
+            },
             thumbnailImage: true,
           },
           orderBy: {
