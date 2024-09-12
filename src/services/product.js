@@ -131,7 +131,7 @@ class ProductService {
 
   static async crawlCategory({ url }) {
     const links = await getAllProductLinks(url);
-    return await ProductService.crawlMany({ categorySlug: "tranh-tre-em", urls: links });
+    return await ProductService.crawlMany({ categorySlug: "tranh-phong-ngu", urls: links });
   }
 
   static async create({ uploadedImageIds, variants, ...data }) {
@@ -173,6 +173,7 @@ class ProductService {
     filter,
     filterMinPrice,
     filterMaxPrice,
+    sortBy,
   }) {
     let query = {
       include: {
@@ -203,30 +204,10 @@ class ProductService {
       categoryIds,
       productIds,
       type,
+      filterMaxPrice,
+      filterMinPrice,
+      sortBy,
     });
-
-    console.log("type", type);
-
-    console.log("filter", filter);
-
-    console.log("query", query);
-
-    if (filterMaxPrice && filterMinPrice) {
-      query = {
-        ...query,
-        where: {
-          ...query.where,
-          variants: {
-            some: {
-              price: {
-                gte: filterMinPrice,
-                lte: filterMaxPrice,
-              }
-            }
-          },
-        }
-      }
-    }
 
     const count = await prisma.product.count({
       where: query.where,

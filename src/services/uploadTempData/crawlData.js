@@ -136,7 +136,7 @@ const getAllProductLinks = async (url) => {
 		links.push(link);
 	})
 	console.log("links", links);
-	return links.slice(0, 5);
+	return links.slice(5, 10);
 }
 
 module.exports = {

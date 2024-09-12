@@ -25,14 +25,14 @@ router.get(
     .isIn(PRODUCT_QUERY_TYPES)
     .withMessage("Unknown product query type"),
   query("limit").isNumeric().withMessage("Limit should be a number"),
-  query("page").isNumeric().withMessage("Page should be a number"),
+  // query("page").isNumeric().withMessage("Page should be a number"),
   // query("filter").isIn(["price", "discount"]),
   // query("filterMinPrice")
   //   .isNumeric()
   //   .withMessage("Min price should be a number"),
-  query("filterMaxPrice")
-    .isNumeric()
-    .withMessage("Max price should be a number"),
+  // query("filterMaxPrice")
+  //   .isNumeric()
+  //   .withMessage("Max price should be a number"),
   query("categoryIds.*")
     .isNumeric()
     .withMessage("CategoryIds should be an integer array"),

@@ -7,7 +7,7 @@ const {
 } = require("../constant/productType");
 
 const getQueryObjectBasedOnFilters = async (currentQueryObject, filters) => {
-  const { productIds, categoryIds, type } = filters;
+  const { productIds, categoryIds, type, filterMinPrice, filterMaxPrice, sortBy } = filters;
   const queryObject = { ...currentQueryObject };
 
   if (categoryIds.length > 0) {
@@ -36,8 +36,32 @@ const getQueryObjectBasedOnFilters = async (currentQueryObject, filters) => {
         },
       };
     }
+  }
 
-    queryObject.include.variants = true;
+  if (filterMaxPrice && filterMinPrice) {
+    queryObject.where = {
+      ...queryObject.where,
+      variants: {
+        some: {
+          price: {
+            gte: filterMinPrice,
+            lte: filterMaxPrice,
+          }
+        }
+      },
+    }
+  }
+
+  if (sortBy?.field === "createdAt") {
+    queryObject.orderBy = {
+      createdAt: sortBy.direction,
+    };
+  }
+
+  if (sortBy?.field === "name") {
+    queryObject.orderBy = {
+      name: sortBy.direction,
+    };
   }
 
   if (type === PRODUCT_NEWEST) {

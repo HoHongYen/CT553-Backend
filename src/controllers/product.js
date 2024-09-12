@@ -22,9 +22,10 @@ class ProductController {
         filter: req.query.filter,
         filterMinPrice: +req.query.filterMinPrice,
         filterMaxPrice: +req.query.filterMaxPrice,
+        sortBy: req.query.sortBy,
       }),
     }).send(res);
-  } 
+  }
 
   static async getOne(req, res) {
     new OKResponse({
