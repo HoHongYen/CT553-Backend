@@ -2,7 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch"]
   // previewFeatures = ["fullTextSearch", "postgresqlExtensions"]
 }
 
@@ -21,8 +22,8 @@ model UploadedImage {
   category      Category?
   productImages ProductImage[]
 
-  thumbnailImageOfProduct Product? @relation("ThumbnailImage") 
-  viewImageOfProduct      Product? @relation("ViewImage") 
+  thumbnailImageOfProduct Product? @relation("ThumbnailImage")
+  viewImageOfProduct      Product? @relation("ViewImage")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")

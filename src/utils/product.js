@@ -6,6 +6,27 @@ const {
   PRODUCT_SALES,
 } = require("../constant/productType");
 
+const commonIncludeOptionsInProduct = {
+  images: {
+    include: {
+      image: true,
+    },
+  },
+  thumbnailImage: true,
+  viewImage: true,
+  variants: true,
+  // productDiscount: {
+  //   where: {
+  //     startDate: {
+  //       lte: new Date().toISOString(),
+  //     },
+  //     endDate: {
+  //       gte: new Date().toISOString(),
+  //     },
+  //   },
+  // },
+};
+
 const getQueryObjectBasedOnFilters = async (currentQueryObject, filters) => {
   const { productIds, categoryIds, type, filterMinPrice, filterMaxPrice, sortBy } = filters;
   const queryObject = { ...currentQueryObject };
@@ -93,4 +114,18 @@ const getQueryObjectBasedOnFilters = async (currentQueryObject, filters) => {
   return queryObject;
 };
 
-module.exports = { getQueryObjectBasedOnFilters };
+const getQueryFullTextSearch = (currentQueryObject, query) => {
+  const searchText = query.trim().replace(/ {2,}/g, " ").toLowerCase().replace(/ /g, " & ");;
+
+  let queryObject = { ...currentQueryObject };
+  queryObject.where = {
+    ...queryObject.where,
+    name: {
+      search: searchText,
+    },
+  };
+  queryObject.include = commonIncludeOptionsInProduct
+  return queryObject;
+};
+
+module.exports = { getQueryObjectBasedOnFilters, getQueryFullTextSearch, commonIncludeOptionsInProduct };

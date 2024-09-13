@@ -17,6 +17,7 @@ class ProductController {
         type: req.query.type,
         categoryIds: req.query.categoryIds,
         limit: +req.query.limit,
+        search: req.query.search,
         productIds: req.query.productIds,
         page,
         filter: req.query.filter,
@@ -78,7 +79,7 @@ class ProductController {
   }
 
   static async search(req, res) {
-    const query = req.query.q;
+    const query = req.query.s;
 
     new OKResponse({
       metadata: await ProductService.search(query),

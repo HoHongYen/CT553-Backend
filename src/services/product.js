@@ -16,41 +16,8 @@ const {
 } = require("../utils/generateEmbeddings");
 const { getGenderFromQuery, getUploadedImageId, getUploadedImageIds } = require("../utils");
 const { Prisma } = require("@prisma/client");
-const { getQueryObjectBasedOnFilters } = require("../utils/product");
+const { getQueryObjectBasedOnFilters, getQueryFullTextSearch, commonIncludeOptionsInProduct } = require("../utils/product");
 const { getProduct, getAllProductLinks } = require("./uploadTempData/crawlData");
-
-const commonIncludeOptionsInProduct = {
-  images: {
-    include: {
-      image: true,
-    },
-  },
-  colors: {
-    include: {
-      thumbnailImage: true,
-      productImage: {
-        include: {
-          image: true,
-        },
-      },
-    },
-  },
-  variants: {
-    select: {
-      quantity: true,
-    },
-  },
-  productDiscount: {
-    where: {
-      startDate: {
-        lte: new Date().toISOString(),
-      },
-      endDate: {
-        gte: new Date().toISOString(),
-      },
-    },
-  },
-};
 
 class ProductService {
   // crawl
@@ -170,6 +137,7 @@ class ProductService {
     productIds = [],
     page = 1,
     limit = 8,
+    search,
     filter,
     filterMinPrice,
     filterMaxPrice,
@@ -208,6 +176,10 @@ class ProductService {
       filterMinPrice,
       sortBy,
     });
+
+    if (search) {
+      query = getQueryFullTextSearch(query, search);
+    }
 
     const count = await prisma.product.count({
       where: query.where,
@@ -366,46 +338,29 @@ class ProductService {
   }
 
   static async search(query) {
-    const trimmedQuery = query.trim().replace(/ {2,}/g, " ").toLowerCase();
+    console.log("query", query);
+    const trimmedQuery = query.trim().replace(/ {2,}/g, " ").toLowerCase().replace(/ /g, " & ");;
 
-    const genderObject = await getGenderFromQuery(trimmedQuery);
-
-    let categoriesRecursivelyFromParent = [];
-
-    if (genderObject) {
-      categoriesRecursivelyFromParent = Array.from(
-        new Set(
-          await CategoryService.getCategoriesRecursivelyFromParent(
-            genderObject.id
-          )
-        )
-      );
-    }
-
-    const fullTextSearchStringQueryWithoutGender = trimmedQuery
-      .replace(/nam|nữ|trẻ em/g, "")
-      .trim()
-      .replace(/ {2,}/g, " ")
-      .replace(/ /g, " & ");
+    console.log("trimmedQuery", trimmedQuery);
 
     const fullTextSearchResult = await ProductService.fullTextSearch(
-      fullTextSearchStringQueryWithoutGender,
-      categoriesRecursivelyFromParent
+      trimmedQuery,
     );
 
-    const semanticSearchResult = await ProductService.semanticSeach(
-      trimmedQuery,
-      fullTextSearchResult,
-      categoriesRecursivelyFromParent
-    );
+    // const semanticSearchResult = await ProductService.semanticSearch(
+    //   trimmedQuery,
+    //   fullTextSearchResult,
+    //   // categoriesRecursivelyFromParent
+    // );
 
     return {
       fullTextSearchResult,
-      semanticSearchResult,
+      // semanticSearchResult,
     };
   }
 
-  static async fullTextSearch(query, categoriesRecursivelyFromParent = []) {
+
+  static async fullTextSearch(query) {
     const searchQuery = {
       where: {
         name: {
@@ -414,15 +369,13 @@ class ProductService {
       },
       include: commonIncludeOptionsInProduct,
     };
-    if (categoriesRecursivelyFromParent.length > 0) {
-      searchQuery.where.categoryId = {
-        in: categoriesRecursivelyFromParent,
-      };
-    }
+
+    console.log("searchQuery", searchQuery);
+
     return await prisma.product.findMany(searchQuery);
   }
 
-  static async semanticSeach(
+  static async semanticSearch(
     query,
     fullTextSearchResult = [],
     categoriesRecursivelyFromParent = []
