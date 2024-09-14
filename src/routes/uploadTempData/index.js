@@ -22,8 +22,8 @@ router.post(
 
 router.post(
   "/categories", (req, res) => {
-    uploadParentCategories();
-    // uploadChildrenCategories();
+    // uploadParentCategories();
+    uploadChildrenCategories();
     res.send("Categories uploaded successfully");
   }
 );

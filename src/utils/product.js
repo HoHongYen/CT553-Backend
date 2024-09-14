@@ -115,7 +115,7 @@ const getQueryObjectBasedOnFilters = async (currentQueryObject, filters) => {
 };
 
 const getQueryFullTextSearch = (currentQueryObject, query) => {
-  const searchText = query.trim().replace(/ {2,}/g, " ").toLowerCase().replace(/ /g, " & ");;
+  const searchText = query.trim().replace(/ {2,}/g, " ").toLowerCase().replace(/ /g, " & ");
 
   let queryObject = { ...currentQueryObject };
   queryObject.where = {

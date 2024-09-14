@@ -78,6 +78,18 @@ class ProductController {
     }).send(res);
   }
 
+  static async getAllEmbeddings(req, res) {
+    new OKResponse({
+      metadata: await ProductService.getAllEmbeddings(),
+    }).send(res);
+  }
+
+  static async createEmbeddingsForAllProducts(req, res) {
+    new OKResponse({
+      metadata: await ProductService.createEmbeddingsForAllProducts(),
+    }).send(res);
+  }
+
   static async search(req, res) {
     const query = req.query.s;
 

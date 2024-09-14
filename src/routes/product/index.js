@@ -40,6 +40,10 @@ router.get(
   asyncHandler(ProductController.getAll)
 );
 
+router.get("/getAllEmbeddings", asyncHandler(ProductController.getAllEmbeddings));
+
+router.get("/createEmbeddingsForAllProducts", asyncHandler(ProductController.createEmbeddingsForAllProducts));
+
 router.get("/search", asyncHandler(ProductController.search));
 router.get(
   "/search/image",
