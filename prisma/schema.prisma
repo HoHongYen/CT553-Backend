@@ -3,14 +3,13 @@
 
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["fullTextSearch"]
-  // previewFeatures = ["fullTextSearch", "postgresqlExtensions"]
+  previewFeatures = ["fullTextSearch", "postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-  // extensions = [pgvector(map: "vector")]
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [pgvector(map: "vector")]
 }
 
 model UploadedImage {
@@ -104,33 +103,6 @@ model Category {
   @@map("categories")
 }
 
-// model Color {
-//   id   Int    @id @default(autoincrement()) @map("color_id")
-//   name String
-
-//   thumbnailImageId Int           @unique @map("thumbnail_image_id")
-//   thumbnailImage   UploadedImage @relation(fields: [thumbnailImageId], references: [id], onDelete: Cascade)
-
-//   productId Int     @map("product_id")
-//   product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-
-//   productImageId Int          @unique @map("product_image_id")
-//   productImage   ProductImage @relation(fields: [productImageId], references: [id], onDelete: Cascade)
-
-//   variant Variant[]
-
-//   @@map("colors")
-// }
-
-// model Size {
-//   id          Int       @id @default(autoincrement()) @map("size_id")
-//   name        String
-//   description String
-//   variants    Variant[]
-
-//   @@map("sizes")
-// }
-
 model ProductImage {
   id        Int @id @default(autoincrement()) @map("product_image_id")
   imageId   Int @map("image_id")
@@ -169,7 +141,7 @@ model Product {
   // productDiscount        ProductDiscount[]
   // productImageEmbeddings ProductImageEmbeddings[]
 
-  // productEmbedding ProductEmbeddings?
+  productEmbedding ProductEmbeddings?
 
   @@map("products")
 }
@@ -338,15 +310,15 @@ model Payment {
 //   @@map("product_discounts")
 // }
 
-// model ProductEmbeddings {
-//   id        Int                   @id @default(autoincrement()) @map("product_embedding_id")
-//   productId Int                   @unique @map("product_id")
-//   embedding Unsupported("vector")
+model ProductEmbeddings {
+  id        Int                   @id @default(autoincrement()) @map("product_embedding_id")
+  productId Int                   @unique @map("product_id")
+  embedding Unsupported("vector")
 
-//   product Product @relation(fields: [productId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
 
-//   @@map("product_embeddings")
-// }
+  @@map("product_embeddings")
+}
 
 // model ProductImageEmbeddings {
 //   id Int @id @default(autoincrement()) @map("product_image_embedding_id")
