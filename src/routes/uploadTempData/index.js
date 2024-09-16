@@ -23,7 +23,7 @@ router.post(
 router.post(
   "/categories", (req, res) => {
     // uploadParentCategories();
-    uploadChildrenCategories();
+    uploadChildrenCategories(); 
     res.send("Categories uploaded successfully");
   }
 );

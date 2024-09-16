@@ -18,6 +18,7 @@ const { getUploadedImageId, getUploadedImageIds } = require("../utils");
 const { Prisma } = require("@prisma/client");
 const { getQueryObjectBasedOnFilters, commonIncludeOptionsInProduct } = require("../utils/product");
 const { getProduct, getAllProductLinks } = require("./uploadTempData/crawlData");
+const path = require("path");
 
 class ProductService {
   // crawl
@@ -351,11 +352,11 @@ class ProductService {
     };
   }
 
-  static async getAllEmbeddings() {
+  static async getAllTextEmbeddings() {
     return await prisma.productEmbeddings.findMany();
   }
 
-  static async createEmbeddingsForAllProducts() {
+  static async createTextEmbeddingsForAllProducts() {
     let products = await prisma.product.findMany({
       select: {
         id: true,
@@ -381,6 +382,61 @@ class ProductService {
         INSERT INTO product_embeddings (product_id, embedding) VALUES (${product.id} , ${embedding}::vector)`;
       })
     );
+  }
+
+  static async getAllImageEmbeddings() {
+    return await prisma.productImageEmbeddings.findMany();
+  }
+
+  static async createImageEmbeddingsForAllProducts() {
+    let products = await prisma.product.findMany({
+      select: {
+        id: true,
+        images: {
+          select: {
+            image: {
+              select: {
+                id: true,
+                path: true,
+              },
+            },
+          },
+        },
+        thumbnailImage: {
+          select: {
+            id: true,
+            path: true,
+          },
+        },
+        viewImage: {
+          select: {
+            id: true,
+            path: true,
+          },
+        },
+      },
+    });
+
+    products = products.slice(2, 4);
+
+    products.map(async (product) => {
+      let images = product.images.map((image) => {
+        return { id: image.image.id, path: image.image.path };
+      });
+      let thumbnailImage = { id: product.thumbnailImage.id, path: product.thumbnailImage.path };
+      let viewImage = { id: product.viewImage.id, path: product.viewImage.path };
+
+      let allImages = [thumbnailImage, viewImage, ...images];
+      console.log("allImages", allImages);
+
+      Promise.all(
+        allImages.map(async (image) => {
+          const embedding = await generateEmbeddingsFromImageUrl(image.path);
+          // console.log("embedding", embedding);
+          await prisma.$queryRaw`
+        INSERT INTO product_image_embeddings (product_id, image_id, embedding) VALUES (${product.id}, ${image.id}, ${embedding}::vector)`;
+        }));
+    })
   }
 
   static async fullTextSearch(query) {
@@ -425,7 +481,7 @@ class ProductService {
 
     console.log("Semantic result", result);
 
-    const productLists =  await prisma.product.findMany({
+    const productLists = await prisma.product.findMany({
       where: {
         id: {
           in: result.map((item) => item.product_id),

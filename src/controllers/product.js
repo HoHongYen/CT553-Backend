@@ -78,15 +78,27 @@ class ProductController {
     }).send(res);
   }
 
-  static async getAllEmbeddings(req, res) {
+  static async getAllTextEmbeddings(req, res) {
     new OKResponse({
-      metadata: await ProductService.getAllEmbeddings(),
+      metadata: await ProductService.getAllTextEmbeddings(),
     }).send(res);
   }
 
-  static async createEmbeddingsForAllProducts(req, res) {
+  static async createTextEmbeddingsForAllProducts(req, res) {
     new OKResponse({
-      metadata: await ProductService.createEmbeddingsForAllProducts(),
+      metadata: await ProductService.createTextEmbeddingsForAllProducts(),
+    }).send(res);
+  }
+
+  static async getAllImageEmbeddings(req, res) {
+    new OKResponse({
+      metadata: await ProductService.getAllImageEmbeddings(),
+    }).send(res);
+  }
+
+  static async createImageEmbeddingsForAllProducts(req, res) {
+    new OKResponse({
+      metadata: await ProductService.createImageEmbeddingsForAllProducts(),
     }).send(res);
   }
 

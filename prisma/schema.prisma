@@ -24,8 +24,9 @@ model UploadedImage {
   thumbnailImageOfProduct Product? @relation("ThumbnailImage")
   viewImageOfProduct      Product? @relation("ViewImage")
 
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  createdAt              DateTime                @default(now()) @map("created_at")
+  updatedAt              DateTime                @updatedAt @map("updated_at")
+  ProductImageEmbeddings ProductImageEmbeddings?
 
   @@map("uploaded_images")
 }
@@ -138,8 +139,8 @@ model Product {
   viewImageId Int           @unique @map("view_image_id")
   viewImage   UploadedImage @relation("ViewImage", fields: [viewImageId], references: [id], onDelete: Cascade)
 
-  // productDiscount        ProductDiscount[]
-  // productImageEmbeddings ProductImageEmbeddings[]
+  productDiscount        ProductDiscount[]
+  productImageEmbeddings ProductImageEmbeddings[]
 
   productEmbedding ProductEmbeddings?
 
@@ -297,18 +298,18 @@ model Payment {
 //   @@map("account_coupons")
 // }
 
-// model ProductDiscount {
-//   id            Int      @id @default(autoincrement()) @map("product_discount_id")
-//   productId     Int      @map("product_id")
-//   discountType  String   @map("discount_type")
-//   discountValue Float    @map("discount_value")
-//   startDate     DateTime @map("start_date")
-//   endDate       DateTime @map("end_date")
+model ProductDiscount {
+  id            Int      @id @default(autoincrement()) @map("product_discount_id")
+  productId     Int      @map("product_id")
+  discountType  String   @map("discount_type")
+  discountValue Float    @map("discount_value")
+  startDate     DateTime @map("start_date")
+  endDate       DateTime @map("end_date")
 
-//   product Product @relation(fields: [productId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
 
-//   @@map("product_discounts")
-// }
+  @@map("product_discounts")
+}
 
 model ProductEmbeddings {
   id        Int                   @id @default(autoincrement()) @map("product_embedding_id")
@@ -320,15 +321,15 @@ model ProductEmbeddings {
   @@map("product_embeddings")
 }
 
-// model ProductImageEmbeddings {
-//   id Int @id @default(autoincrement()) @map("product_image_embedding_id")
+model ProductImageEmbeddings {
+  id Int @id @default(autoincrement()) @map("product_image_embedding_id")
 
-//   productId Int                   @map("product_id")
-//   imageId   Int                   @unique @map("image_id")
-//   embedding Unsupported("vector")
+  productId Int                   @map("product_id")
+  imageId   Int                   @unique @map("image_id")
+  embedding Unsupported("vector")
 
-//   product Product       @relation(fields: [productId], references: [id])
-//   image   UploadedImage @relation(fields: [imageId], references: [id])
+  product Product       @relation(fields: [productId], references: [id])
+  image   UploadedImage @relation(fields: [imageId], references: [id])
 
-//   @@map("product_image_embeddings")
-// }
+  @@map("product_image_embeddings")
+}

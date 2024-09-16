@@ -40,9 +40,11 @@ router.get(
   asyncHandler(ProductController.getAll)
 );
 
-router.get("/getAllEmbeddings", asyncHandler(ProductController.getAllEmbeddings));
+router.get("/getAllTextEmbeddings", asyncHandler(ProductController.getAllTextEmbeddings));
+router.get("/createTextEmbeddingsForAllProducts", asyncHandler(ProductController.createTextEmbeddingsForAllProducts));
 
-router.get("/createEmbeddingsForAllProducts", asyncHandler(ProductController.createEmbeddingsForAllProducts));
+router.get("/getAllImageEmbeddings", asyncHandler(ProductController.getAllImageEmbeddings));
+router.get("/createImageEmbeddingsForAllProducts", asyncHandler(ProductController.createImageEmbeddingsForAllProducts));
 
 router.get("/search", asyncHandler(ProductController.search));
 router.get(
