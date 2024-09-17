@@ -89,17 +89,17 @@ model Role {
 model Category {
   id   Int    @id @default(autoincrement()) @map("category_id")
   name String
-  slug String
+  slug String @unique
 
   thumbnailImageId Int           @unique @map("thumbnail_image_id")
   thumbnailImage   UploadedImage @relation(fields: [thumbnailImageId], references: [id], onDelete: Cascade)
 
-  parentId  Int?       @map("parent_id")
-  parent    Category?  @relation("categoryRelation", fields: [parentId], references: [id], onDelete: Cascade)
-  children  Category[] @relation("categoryRelation")
-  createdAt DateTime   @default(now()) @map("created_at")
-  updatedAt DateTime   @updatedAt @map("updated_at")
-  products  Product[]
+  parentId  Int?              @map("parent_id")
+  parent    Category?         @relation("categoryRelation", fields: [parentId], references: [id], onDelete: Cascade)
+  children  Category[]        @relation("categoryRelation")
+  createdAt DateTime          @default(now()) @map("created_at")
+  updatedAt DateTime          @updatedAt @map("updated_at")
+  products  ProductCategory[]
 
   @@map("categories")
 }
@@ -116,22 +116,33 @@ model ProductImage {
   @@map("product_images")
 }
 
+model ProductCategory {
+  id         Int @id @default(autoincrement()) @map("product_category_id")
+  categoryId Int @map("category_id")
+  productId  Int @map("product_id")
+
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([categoryId, productId])
+  @@map("product_categories")
+}
+
 model Product {
-  id            Int            @id @default(autoincrement()) @map("product_id")
+  id            Int               @id @default(autoincrement()) @map("product_id")
   name          String
-  visible       Boolean        @default(true)
+  visible       Boolean           @default(true)
   overview      String
   material      String
   specification String
   instruction   String
-  slug          String         @unique
-  soldNumber    Int            @default(0)
-  categoryId    Int?           @map("category_id")
-  category      Category?      @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  createdAt     DateTime       @default(now()) @map("created_at")
-  updatedAt     DateTime       @updatedAt @map("updated_at")
+  slug          String            @unique
+  soldNumber    Int               @default(0)
+  createdAt     DateTime          @default(now()) @map("created_at")
+  updatedAt     DateTime          @updatedAt @map("updated_at")
   variants      Variant[]
   images        ProductImage[]
+  categories    ProductCategory[]
 
   thumbnailImageId Int           @unique @map("thumbnail_image_id")
   thumbnailImage   UploadedImage @relation("ThumbnailImage", fields: [thumbnailImageId], references: [id], onDelete: Cascade)
@@ -316,7 +327,7 @@ model ProductEmbeddings {
   productId Int                   @unique @map("product_id")
   embedding Unsupported("vector")
 
-  product Product @relation(fields: [productId], references: [id])
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@map("product_embeddings")
 }
@@ -328,8 +339,8 @@ model ProductImageEmbeddings {
   imageId   Int                   @unique @map("image_id")
   embedding Unsupported("vector")
 
-  product Product       @relation(fields: [productId], references: [id])
-  image   UploadedImage @relation(fields: [imageId], references: [id])
+  product Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  image   UploadedImage @relation(fields: [imageId], references: [id], onDelete: Cascade)
 
   @@map("product_image_embeddings")
 }

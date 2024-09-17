@@ -37,8 +37,18 @@ const existCategory = async (categoryId) => {
   const foundCategory = await prisma.category.findUnique({
     where: { id: +categoryId },
   });
-
   if (!foundCategory) throw new BadRequest("Category not found");
+};
+
+const existCategories = async (categoryIds) => {
+  if (!categoryIds) return true;
+  for (let categoryId of categoryIds) {
+    if (!Number.parseInt(categoryId)) throw new BadRequest("Categories not found");
+    const foundCategory = await prisma.category.findUnique({
+      where: { id: +categoryId },
+    });
+    if (!foundCategory) throw new BadRequest("Categories not found");
+  }
 };
 
 const existProduct = async (productId) => {
@@ -65,9 +75,21 @@ const existProductImage = async (productImageId, { req }) => {
   if (!Number.parseInt(productImageId))
     throw new BadRequest("Product image not found");
   const foundProductImage = await prisma.productImage.findUnique({
-    where: { id: +productImageId },
+    where: {
+      id: +productImageId,
+    },
   });
   if (!foundProductImage) throw new BadRequest("Product image not found");
+};
+
+const existProductCategory = async (productCategoryId, { req }) => {
+  if (!productCategoryId) return true;
+  if (!Number.parseInt(productCategoryId))
+    throw new BadRequest("Product category not found");
+  const foundProductCategory = await prisma.productCategory.findUnique({
+    where: { id: +productCategoryId },
+  });
+  if (!foundProductCategory) throw new BadRequest("Product category not found");
 };
 
 const existUploadedImage = async (uploadedImageId) => {
@@ -203,9 +225,11 @@ module.exports = {
   validate,
   uniqueEmail,
   existCategory,
+  existCategories,
   existProduct,
   existProductWithSlug,
   existProductImage,
+  existProductCategory,
   existVariant,
   existUploadedImage,
   existProvince,

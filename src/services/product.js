@@ -18,11 +18,10 @@ const { getUploadedImageId, getUploadedImageIds } = require("../utils");
 const { Prisma } = require("@prisma/client");
 const { getQueryObjectBasedOnFilters, commonIncludeOptionsInProduct } = require("../utils/product");
 const { getProduct, getAllProductLinks } = require("./uploadTempData/crawlData");
-const path = require("path");
 
 class ProductService {
   // crawl
-  static async crawl({ url, categorySlug }) {
+  static async crawl({ url, categorySlugs }) {
     const productData = await getProduct(url);
 
     const findProduct = await prisma.product.findFirst({
@@ -38,7 +37,19 @@ class ProductService {
     console.log("productData", productData);
 
     // get category
-    const category = await CategoryService.getOneBySlug(categorySlug);
+
+    const categories = await prisma.category.findMany({
+      where: {
+        slug: {
+          in: categorySlugs,
+        },
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    console.log("categories", categories);
 
     // upload thumbnail image
     const thumbnailImageId = await getUploadedImageId(productData.thumbnailImage);
@@ -61,7 +72,6 @@ class ProductService {
           specification: productData.specification,
           material: productData.material,
           instruction: productData.instruction,
-          categoryId: category.id,
           thumbnailImageId,
           viewImageId,
           slug: slugify(productData.name, { lower: true }),
@@ -83,26 +93,34 @@ class ProductService {
           productId: createdProduct.id,
         })),
       });
+
+      await tx.productCategory.createMany({
+        data: categories.map((category) => ({
+          categoryId: category.id,
+          productId: createdProduct.id,
+        })),
+      });
+
       return createdProduct;
     });
 
     return newProduct;
   }
 
-  static async crawlMany({ categorySlug, urls }) {
+  static async crawlMany({ categorySlugs, urls }) {
     return await Promise.all(
       urls.map(async (url) => {
-        return await ProductService.crawl({ url, categorySlug });
+        return await ProductService.crawl({ url, categorySlugs });
       })
     );
   }
 
   static async crawlCategory({ url }) {
     const links = await getAllProductLinks(url);
-    return await ProductService.crawlMany({ categorySlug: "tranh-phong-ngu", urls: links });
+    return await ProductService.crawlMany({ categorySlugs: ["tranh-phong-ngu", "tranh-phong-khach"], urls: links });
   }
 
-  static async create({ uploadedImageIds, variants, ...data }) {
+  static async create({ uploadedImageIds, categoryIds, variants, ...data }) {
     const newProduct = await prisma.$transaction(async (tx) => {
       const createdProduct = await tx.product.create({
         data: {
@@ -125,10 +143,87 @@ class ProductService {
           productId: createdProduct.id,
         })),
       });
+
+      await tx.productCategory.createMany({
+        data: categoryIds.map((categoryId) => ({
+          categoryId: categoryId,
+          productId: createdProduct.id,
+        })),
+      });
+
       return createdProduct;
     });
 
+    // create embeddings
+    await ProductService.createEmbeddingsForProduct(newProduct.id);
+
     return newProduct;
+  }
+
+  static async createEmbeddingsForProduct(productId) {
+    const product = await prisma.product.findUnique({
+      where: {
+        id: productId,
+      },
+      select: {
+        name: true,
+        overview: true,
+        categories: {
+          select: {
+            category: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+        images: {
+          select: {
+            image: {
+              select: {
+                id: true,
+                path: true,
+              },
+            },
+          },
+        },
+        thumbnailImage: {
+          select: {
+            id: true,
+            path: true,
+          },
+        },
+        viewImage: {
+          select: {
+            id: true,
+            path: true,
+          },
+        },
+      },
+    });
+
+    const categoryNames = product.categories.map((category) => category.category.name).join(" ");
+
+    const textToTransform = `${product.name} ${categoryNames} ${product.overview}`;
+    const embedding = await generateEmbeddingsFromTextV2(textToTransform);
+
+    await prisma.$queryRaw`
+    INSERT INTO product_embeddings (product_id, embedding) VALUES (${productId} , ${embedding}::vector)`;
+
+    const images = product.images.map((image) => {
+      return { id: image.image.id, path: image.image.path };
+    });
+    const thumbnailImage = { id: product.thumbnailImage.id, path: product.thumbnailImage.path };
+    const viewImage = { id: product.viewImage.id, path: product.viewImage.path };
+    const allImages = [thumbnailImage, viewImage, ...images];
+
+    Promise.all(
+      allImages.map(async (image) => {
+        const embedding = await generateEmbeddingsFromImageUrl(image.path);
+        await prisma.$queryRaw`
+      INSERT INTO product_image_embeddings (product_id, image_id, embedding) VALUES (${productId}, ${image.id}, ${embedding}::vector)`;
+      })
+    );
   }
 
   static async getAll({
@@ -149,20 +244,25 @@ class ProductService {
             image: true,
           },
         },
+        categories: {
+          include: {
+            category: true,
+          }
+        },
         thumbnailImage: true,
         viewImage: true,
         variants: true,
 
-        // productDiscount: {
-        //   where: {
-        //     startDate: {
-        //       lte: new Date().toISOString(),
-        //     },
-        //     endDate: {
-        //       gte: new Date().toISOString(),
-        //     },
-        //   },
-        // },
+        productDiscount: {
+          where: {
+            startDate: {
+              lte: new Date().toISOString(),
+            },
+            endDate: {
+              gte: new Date().toISOString(),
+            },
+          },
+        },
       },
       take: limit,
     };
@@ -207,19 +307,24 @@ class ProductService {
               image: true,
             },
           },
+          categories: {
+            include: {
+              category: true,
+            }
+          },
           thumbnailImage: true,
           viewImage: true,
           variants: true,
-          // productDiscount: {
-          //   where: {
-          //     startDate: {
-          //       lte: new Date().toISOString(),
-          //     },
-          //     endDate: {
-          //       gte: new Date().toISOString(),
-          //     },
-          //   },
-          // },
+          productDiscount: {
+            where: {
+              startDate: {
+                lte: new Date().toISOString(),
+              },
+              endDate: {
+                gte: new Date().toISOString(),
+              },
+            },
+          },
         },
       }),
       prisma.variant.findMany({
@@ -248,19 +353,24 @@ class ProductService {
             image: true,
           },
         },
+        categories: {
+          include: {
+            category: true,
+          }
+        },
         thumbnailImage: true,
         viewImage: true,
-        variants: true
-        // productDiscount: {
-        //   where: {
-        //     startDate: {
-        //       lte: new Date().toISOString(),
-        //     },
-        //     endDate: {
-        //       gte: new Date().toISOString(),
-        //     },
-        //   },
-        // },
+        variants: true,
+        productDiscount: {
+          where: {
+            startDate: {
+              lte: new Date().toISOString(),
+            },
+            endDate: {
+              gte: new Date().toISOString(),
+            },
+          },
+        },
       },
     });
 
@@ -316,19 +426,42 @@ class ProductService {
 
   static async deleteImage(productImageId, filename) {
 
-    const productImage = await prisma.productImage.findUnique({
+    const { imageId } = await prisma.productImage.findUnique({
       where: {
-        id: productImageId,
-      },
+        id: productImageId
+      }
     });
 
     await Promise.all([
       prisma.productImage.delete({
         where: {
-          id: productImageId,
+          id: productImageId
+        }
+      }),
+      UploadService.destroyImage(imageId),
+    ]);
+  }
+
+
+  static async addCategory(productId, { categoryId }) {
+    return await prisma.productCategory.create({
+      data: {
+        productId,
+        categoryId,
+      },
+    });
+  }
+
+  static async deleteCategory(productId, categoryId) {
+    await Promise.all([
+      prisma.productCategory.delete({
+        where: {
+          categoryId_productId: {
+            categoryId,
+            productId,
+          },
         },
       }),
-      UploadService.destroyImage(productImage.imageId),
     ]);
   }
 
@@ -357,22 +490,34 @@ class ProductService {
   }
 
   static async createTextEmbeddingsForAllProducts() {
+
+    await prisma.$queryRaw`TRUNCATE TABLE product_embeddings RESTART IDENTITY`;
+
     let products = await prisma.product.findMany({
       select: {
         id: true,
         name: true,
         overview: true,
-        category: {
+        categories: {
           select: {
-            name: true,
-          },
+            category: {
+              select: {
+                name: true,
+              }
+            }
+          }
         }
       },
     });
 
     Promise.all(
       products.map(async (product) => {
-        const textToTransform = `${product.name} ${product.category.name} ${product.overview}`;
+
+        const categoryNames = product.categories.map((category) => category.category.name).join(" ");
+
+        console.log("categoryNames", categoryNames);
+
+        const textToTransform = `${product.name} ${categoryNames} ${product.overview}`;
         console.log("textToTransform", textToTransform);
         const embedding = await generateEmbeddingsFromTextV2(textToTransform);
 
@@ -389,6 +534,9 @@ class ProductService {
   }
 
   static async createImageEmbeddingsForAllProducts() {
+
+    await prisma.$queryRaw`TRUNCATE TABLE product_image_embeddings RESTART IDENTITY`;
+
     let products = await prisma.product.findMany({
       select: {
         id: true,
@@ -417,7 +565,7 @@ class ProductService {
       },
     });
 
-    products = products.slice(2, 4);
+    products = products.slice(6, 8);
 
     products.map(async (product) => {
       let images = product.images.map((image) => {

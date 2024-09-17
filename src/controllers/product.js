@@ -61,8 +61,24 @@ class ProductController {
   static async deleteImage(req, res) {
     new CreatedResponse({
       metadata: await ProductService.deleteImage(
-        +req.params.imageId,
+        +req.params.productImageId,
         req.filename
+      ),
+      // metadata: {},
+    }).send(res);
+  }
+
+  static async addCategory(req, res) {
+    new CreatedResponse({
+      metadata: await ProductService.addCategory(+req.params.id, req.body),
+    }).send(res);
+  }
+
+  static async deleteCategory(req, res) {
+
+    new CreatedResponse({
+      metadata: await ProductService.deleteCategory(
+        +req.params.id, +req.params.categoryId
       ),
       // metadata: {},
     }).send(res);

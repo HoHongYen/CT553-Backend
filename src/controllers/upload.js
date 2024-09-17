@@ -3,6 +3,7 @@ const UploadService = require("../services/upload");
 
 class UploadController {
   static async uploadImage(req, res) {
+    console.log("uploadImage", req.file);
     new CreatedResponse({
       message: "Image was uploaded!",
       metadata: await UploadService.uploadImage({

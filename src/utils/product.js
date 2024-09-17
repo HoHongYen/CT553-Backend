@@ -12,19 +12,24 @@ const commonIncludeOptionsInProduct = {
       image: true,
     },
   },
+  categories: {
+    include: {
+      category: true,
+    }
+  },
   thumbnailImage: true,
   viewImage: true,
   variants: true,
-  // productDiscount: {
-  //   where: {
-  //     startDate: {
-  //       lte: new Date().toISOString(),
-  //     },
-  //     endDate: {
-  //       gte: new Date().toISOString(),
-  //     },
-  //   },
-  // },
+  productDiscount: {
+    where: {
+      startDate: {
+        lte: new Date().toISOString(),
+      },
+      endDate: {
+        gte: new Date().toISOString(),
+      },
+    },
+  },
 };
 
 const getQueryObjectBasedOnFilters = async (currentQueryObject, filters) => {
@@ -37,11 +42,18 @@ const getQueryObjectBasedOnFilters = async (currentQueryObject, filters) => {
         CategoryService.getCategoriesRecursivelyFromParent(+categoryId)
       )
     );
+
     const recursiveCategoryIds = Array.from(new Set(res.flat()));
     queryObject.where = {
-      categoryId: {
-        in: recursiveCategoryIds,
-      },
+      categories: {
+        some: {
+          category: {
+            id: {
+              in: recursiveCategoryIds,
+            },
+          }
+        }
+      }
     };
   }
 

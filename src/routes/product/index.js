@@ -8,6 +8,8 @@ const {
   existProductImage,
   existCategory,
   existUploadedImage,
+  existProductCategory,
+  existCategories,
 } = require("../../middlewares/validation");
 const { authentication, permission } = require("../../middlewares/auth");
 const { ADMIN, EMPLOYEE } = require("../../constant/roles");
@@ -84,7 +86,10 @@ router.post(
   body("material").notEmpty().withMessage("Material is missing"),
   body("overview").notEmpty().withMessage("Overview is missing"),
   body("instruction").notEmpty().withMessage("Instruction is missing"),
-  body("categoryId").custom(existCategory),
+  body("categoryIds")
+    .isArray()
+    .withMessage("CategoryIds should be an array")
+    .custom(existCategories),
   body("thumbnailImageId").custom(existUploadedImage),
   body("viewImageId").custom(existUploadedImage),
   body("uploadedImageIds")
@@ -99,14 +104,8 @@ router.put(
   "/:id",
   // permission([ADMIN, EMPLOYEE]),
   param("id").custom(existProduct),
-  body("categoryId").custom(existCategory),
   asyncHandler(ProductController.update),
-  body("uploadedImageIds")
-    .notEmpty()
-    .isArray()
-    .withMessage("uploadedImageIds should be an array"),
   validate,
-
 );
 
 router.delete(
@@ -117,6 +116,7 @@ router.delete(
   asyncHandler(ProductController.delete)
 );
 
+// image_product begin
 router.post(
   "/:id/add-image",
   param("id").custom(existProduct),
@@ -129,11 +129,34 @@ router.post(
 );
 
 router.delete(
-  "/delete-image/:imageId",
-  param("imageId").custom(existProductImage),
+  "/delete-image/:productImageId",
+  param("productId").custom(existProduct),
+  param("productImageId").custom(existProductImage),
   validate,
   asyncHandler(ProductController.deleteImage)
 );
+// image_product end
+
+// category_product begin
+router.post(
+  "/:id/add-category",
+  param("id").custom(existProduct),
+  body("categoryId")
+    .notEmpty()
+    .withMessage("categoryId is missing")
+    .custom(existCategory),
+  validate,
+  asyncHandler(ProductController.addCategory)
+);
+
+router.delete(
+  "/:id/delete-category/:categoryId",
+  param("id").custom(existProduct),
+  param("categoryId").custom(existCategory),
+  validate,
+  asyncHandler(ProductController.deleteCategory)
+);
+// category_product end
 
 router.post(
   "/:id/discount",
