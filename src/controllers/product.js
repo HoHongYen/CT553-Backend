@@ -40,6 +40,12 @@ class ProductController {
     }).send(res);
   }
 
+  static async getOneBySlugWithAllDiscounts(req, res) {
+    new OKResponse({
+      metadata: await ProductService.getOneBySlugWithAllDiscounts(req.params.slug),
+    }).send(res);
+  }
+
   static async update(req, res) {
     new OKResponse({
       metadata: await ProductService.update(+req.params.id, req.body),
@@ -88,6 +94,16 @@ class ProductController {
     new CreatedResponse({
       message: "Product discount created",
       metadata: await ProductDiscountService.create({
+        ...req.body,
+        productId: +req.params.id,
+      }),
+    }).send(res);
+  }
+
+  static async updateDiscount(req, res) {
+    new CreatedResponse({
+      message: "Product discount updated",
+      metadata: await ProductDiscountService.update({
         ...req.body,
         productId: +req.params.id,
       }),

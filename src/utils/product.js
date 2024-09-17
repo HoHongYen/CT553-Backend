@@ -20,16 +20,17 @@ const commonIncludeOptionsInProduct = {
   thumbnailImage: true,
   viewImage: true,
   variants: true,
-  productDiscount: {
-    where: {
-      startDate: {
-        lte: new Date().toISOString(),
-      },
-      endDate: {
-        gte: new Date().toISOString(),
-      },
-    },
-  },
+  productDiscount: true,
+  // productDiscount: {
+  //   where: {
+  //     startDate: {
+  //       lte: new Date().toISOString(),
+  //     },
+  //     endDate: {
+  //       gte: new Date().toISOString(),
+  //     },
+  //   },
+  // },
 };
 
 const getQueryObjectBasedOnFilters = async (currentQueryObject, filters) => {

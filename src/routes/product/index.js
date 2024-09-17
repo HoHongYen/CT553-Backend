@@ -76,6 +76,13 @@ router.get(
   asyncHandler(ProductController.getOneBySlug)
 );
 
+router.get(
+  "/slug/allDiscounts/:slug",
+  param("slug").custom(existProductWithSlug),
+  validate,
+  asyncHandler(ProductController.getOneBySlugWithAllDiscounts)
+);
+
 // router.use(authentication);
 
 router.post(
@@ -185,6 +192,35 @@ router.post(
     }),
   validate,
   asyncHandler(ProductController.createDiscount)
+);
+
+router.put(
+  "/:id/discount",
+  param("id").custom(existProduct),
+  body("discountType")
+    .notEmpty()
+    .withMessage("Discount type is missing")
+    .isIn(DISCOUNT_TYPES)
+    .withMessage("Invalid discount type"),
+  body("discountValue").notEmpty().withMessage("Discount value is missing"),
+  body("startDate")
+    .notEmpty()
+    .withMessage("Start date is missing")
+    .isDate()
+    .withMessage("Invalid date format"),
+  body("endDate")
+    .notEmpty()
+    .withMessage("End date is missing")
+    .isDate()
+    .withMessage("Invalid date format")
+    .custom((value, { req }) => {
+      if (new Date(req.body.startDate) >= new Date(value)) {
+        throw new Error("End date must be greater than start date");
+      }
+      return true;
+    }),
+  validate,
+  asyncHandler(ProductController.updateDiscount)
 );
 
 module.exports = router;

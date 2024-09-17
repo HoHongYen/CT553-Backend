@@ -33,6 +33,34 @@ class ProductDiscountService {
       },
     });
   }
+
+  static async update({
+    productId,
+    discountType,
+    discountValue,
+    startDate,
+    endDate,
+  }) {
+
+    const foundedProductDiscount = await prisma.productDiscount.findFirst({
+      where: {
+        productId: +productId,
+      },
+    });
+
+    return await prisma.productDiscount.update({
+      where: {
+        id: foundedProductDiscount.id,
+      },
+      data: {
+        discountType,
+        discountValue: +discountValue,
+        startDate: new Date(startDate).toISOString(),
+        endDate: new Date(endDate).toISOString(),
+      },
+    });
+  }
+
 }
 
 module.exports = ProductDiscountService;

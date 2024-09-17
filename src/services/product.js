@@ -8,7 +8,6 @@ const {
   PRODUCT_TRENDING,
   PRODUCT_SALES,
 } = require("../constant/productType");
-const CategoryService = require("./category");
 const {
   generateEmbeddingsFromText,
   generateEmbeddingsFromTextV2,
@@ -103,6 +102,9 @@ class ProductService {
 
       return createdProduct;
     });
+
+    // create embeddings
+    await ProductService.createEmbeddingsForProduct(newProduct.id);
 
     return newProduct;
   }
@@ -355,7 +357,11 @@ class ProductService {
         },
         categories: {
           include: {
-            category: true,
+            category: {
+              include: {
+                parent: true,
+              }
+            },
           }
         },
         thumbnailImage: true,
@@ -371,6 +377,46 @@ class ProductService {
             },
           },
         },
+      },
+    });
+
+    const productSizes = await prisma.variant.findMany({
+      distinct: ["size"],
+      where: {
+        productId: product.id,
+      },
+      select: {
+        size: true,
+      },
+    });
+
+    product.sizes = productSizes
+      .map((item) => item.size)
+      .sort((a, b) => a.id - b.id);
+
+    return product;
+  }
+
+  static async getOneBySlugWithAllDiscounts(productSlug) {
+    const product = await prisma.product.findUnique({
+      where: {
+        slug: productSlug,
+      },
+      include: {
+        images: {
+          include: {
+            image: true,
+          },
+        },
+        categories: {
+          include: {
+            category: true,
+          }
+        },
+        thumbnailImage: true,
+        viewImage: true,
+        variants: true,
+        productDiscount: true,
       },
     });
 
