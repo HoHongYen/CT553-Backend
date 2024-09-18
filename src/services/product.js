@@ -273,6 +273,7 @@ class ProductService {
       categoryIds,
       productIds,
       type,
+      filter,
       filterMaxPrice,
       filterMinPrice,
       sortBy,
@@ -285,7 +286,13 @@ class ProductService {
     const offset = page > 1 ? (page - 1) * limit : 0;
     const totalPages = Math.ceil(count / limit);
 
-    const products = await prisma.product.findMany({ ...query, skip: offset });
+    let products = await prisma.product.findMany({ ...query, skip: offset });
+
+    products = products.map((product) => {
+      let sortedVariants = product.variants.sort((a, b) => a.price - b.price);
+      console.log("sortedVariants", sortedVariants);
+      return { ...product, variants: sortedVariants };
+    })
 
     query;
     return {
@@ -298,50 +305,40 @@ class ProductService {
   }
 
   static async getOne(productId) {
-    const [product, productSizes] = await Promise.all([
-      prisma.product.findUnique({
-        where: {
-          id: productId,
+    const product = prisma.product.findUnique({
+      where: {
+        id: productId,
+      },
+      include: {
+        images: {
+          include: {
+            image: true,
+          },
         },
-        include: {
-          images: {
-            include: {
-              image: true,
+        categories: {
+          include: {
+            category: true,
+          }
+        },
+        thumbnailImage: true,
+        viewImage: true,
+        variants: true,
+        productDiscount: {
+          where: {
+            startDate: {
+              lte: new Date().toISOString(),
+            },
+            endDate: {
+              gte: new Date().toISOString(),
             },
           },
-          categories: {
-            include: {
-              category: true,
-            }
-          },
-          thumbnailImage: true,
-          viewImage: true,
-          variants: true,
-          productDiscount: {
-            where: {
-              startDate: {
-                lte: new Date().toISOString(),
-              },
-              endDate: {
-                gte: new Date().toISOString(),
-              },
-            },
-          },
         },
-      }),
-      prisma.variant.findMany({
-        distinct: ["size"],
-        where: {
-          productId,
-        },
-      }),
-    ]);
+      },
+    });
 
-    product.sizes = productSizes
-      .map((item) => item.size)
-      .sort((a, b) => b.id - a.id);
+    const sortedVariants = product.variants.sort((a, b) => a.price - b.price);
 
-    return product;
+    return { ...product, variants: sortedVariants };
   }
 
   static async getOneBySlug(productSlug) {
@@ -380,21 +377,9 @@ class ProductService {
       },
     });
 
-    const productSizes = await prisma.variant.findMany({
-      distinct: ["size"],
-      where: {
-        productId: product.id,
-      },
-      select: {
-        size: true,
-      },
-    });
+    const sortedVariants = product.variants.sort((a, b) => a.price - b.price);
 
-    product.sizes = productSizes
-      .map((item) => item.size)
-      .sort((a, b) => a.id - b.id);
-
-    return product;
+    return { ...product, variants: sortedVariants };
   }
 
   static async getOneBySlugWithAllDiscounts(productSlug) {
@@ -420,21 +405,9 @@ class ProductService {
       },
     });
 
-    const productSizes = await prisma.variant.findMany({
-      distinct: ["size"],
-      where: {
-        productId: product.id,
-      },
-      select: {
-        size: true,
-      },
-    });
+    const sortedVariants = product.variants.sort((a, b) => a.price - b.price);
 
-    product.sizes = productSizes
-      .map((item) => item.size)
-      .sort((a, b) => a.id - b.id);
-
-    return product;
+    return { ...product, variants: sortedVariants };
   }
 
   static async update(productId, updatedData) {

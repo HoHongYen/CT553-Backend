@@ -34,7 +34,7 @@ const commonIncludeOptionsInProduct = {
 };
 
 const getQueryObjectBasedOnFilters = async (currentQueryObject, filters) => {
-  const { productIds, categoryIds, type, filterMinPrice, filterMaxPrice, sortBy } = filters;
+  const { productIds, categoryIds, type, filter, filterMinPrice, filterMaxPrice, sortBy } = filters;
   const queryObject = { ...currentQueryObject };
 
   if (categoryIds.length > 0) {
@@ -110,10 +110,24 @@ const getQueryObjectBasedOnFilters = async (currentQueryObject, filters) => {
     };
   }
 
-  if (type === PRODUCT_SALES) {
+  if (type === PRODUCT_SALES || filter?.value === "with-discount") {
     if (!queryObject.where) Object.assign(queryObject, { where: {} });
     queryObject.where.productDiscount = {
       some: {
+        startDate: {
+          lte: new Date().toISOString(),
+        },
+        endDate: {
+          gte: new Date().toISOString(),
+        },
+      },
+    };
+  }
+
+  if (filter?.value === "no-discount") {
+    if (!queryObject.where) Object.assign(queryObject, { where: {} });
+    queryObject.where.productDiscount = {
+      none: {
         startDate: {
           lte: new Date().toISOString(),
         },
