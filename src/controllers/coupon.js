@@ -16,6 +16,13 @@ class CouponController {
     }).send(res);
   }
 
+  static async deleteCoupon(req, res) {
+    await CouponService.delete(+req.params.couponId);
+    new OKResponse({
+      message: "Coupon deleted successfully",
+    }).send(res);
+  }
+
   static async getByCode(req, res) {
     new OKResponse({
       message: "Coupon retrieved successfully",

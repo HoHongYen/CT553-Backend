@@ -48,8 +48,8 @@ model Account {
   role   Role @relation(fields: [roleId], references: [id])
 
   addresses Address[]
-  // orders           Order[]
-  // collectedCoupons CollectedCoupons[]
+  orders           Order[]
+  collectedCoupons CollectedCoupons[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -73,7 +73,7 @@ model Address {
 
   accountId Int     @map("account_id")
   account   Account @relation(fields: [accountId], references: [id])
-  // orders    Order[]
+  orders    Order[]
 
   @@map("addresses")
 }
@@ -169,7 +169,7 @@ model Variant {
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-  // OrderDetail OrderDetail[]
+  OrderDetail OrderDetail[]
 
   @@map("variants")
 }
@@ -201,7 +201,7 @@ model Payment {
 
   paymentMethod PaymentMethod @relation(fields: [paymentMethodId], references: [id])
   paymentStatus PaymentStatus @relation(fields: [paymentStatusId], references: [id])
-  // order         Order         @relation(fields: [orderId], references: [id])
+  order         Order         @relation(fields: [orderId], references: [id])
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -209,105 +209,105 @@ model Payment {
   @@map("payments")
 }
 
-// model OrderStatus {
-//   id   Int    @id @default(autoincrement()) @map("order_status_id")
-//   name String
+model OrderStatus {
+  id   Int    @id @default(autoincrement()) @map("order_status_id")
+  name String
 
-//   orders        Order[]
-//   OrderTracking OrderTracking[]
+  orders        Order[]
+  OrderTracking OrderTracking[]
 
-//   @@map("order_statuses")
-// }
+  @@map("order_statuses")
+}
 
-// model Order {
-//   id                Int   @id @default(autoincrement()) @map("order_id")
-//   totalPrice        Float @map("total_price")
-//   totalDiscount     Float @map("total_discount")
-//   finalPrice        Float @map("final_price")
-//   shippingFee       Float @map("shipping_fee")
-//   buyerId           Int   @map("buyer_id")
-//   deliveryAddressId Int   @map("delivery_address_id")
-//   currentStatusId   Int   @map("current_status_id")
+model Order {
+  id                Int   @id @default(autoincrement()) @map("order_id")
+  totalPrice        Float @map("total_price")
+  totalDiscount     Float @map("total_discount")
+  finalPrice        Float @map("final_price")
+  shippingFee       Float @map("shipping_fee")
+  buyerId           Int   @map("buyer_id")
+  deliveryAddressId Int   @map("delivery_address_id")
+  currentStatusId   Int   @map("current_status_id")
 
-//   buyer           Account         @relation(fields: [buyerId], references: [id], onDelete: Cascade)
-//   currentStatus   OrderStatus     @relation(fields: [currentStatusId], references: [id])
-//   deliveryAddress Address         @relation(fields: [deliveryAddressId], references: [id])
-//   Payment         Payment?
-//   OrderTracking   OrderTracking[]
-//   OrderDetail     OrderDetail[]
-//   usedCouponId    Int?            @map("used_coupon_id")
-//   usedCoupon      Coupon?         @relation(fields: [usedCouponId], references: [id])
+  buyer           Account         @relation(fields: [buyerId], references: [id], onDelete: Cascade)
+  currentStatus   OrderStatus     @relation(fields: [currentStatusId], references: [id])
+  deliveryAddress Address         @relation(fields: [deliveryAddressId], references: [id])
+  Payment         Payment?
+  OrderTracking   OrderTracking[]
+  OrderDetail     OrderDetail[]
+  usedCouponId    Int?            @map("used_coupon_id")
+  usedCoupon      Coupon?         @relation(fields: [usedCouponId], references: [id])
 
-//   createdAt DateTime @default(now()) @map("created_at")
-//   updatedAt DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-//   @@map("orders")
-// }
+  @@map("orders")
+}
 
-// model OrderTracking {
-//   id            Int       @id @default(autoincrement()) @map("order_tracking_id")
-//   orderId       Int       @map("order_id")
-//   orderStatusId Int       @map("order_status_id")
-//   beginAt       DateTime  @default(now()) @map("begin_at")
-//   finishAt      DateTime? @map("finish_at")
+model OrderTracking {
+  id            Int       @id @default(autoincrement()) @map("order_tracking_id")
+  orderId       Int       @map("order_id")
+  orderStatusId Int       @map("order_status_id")
+  beginAt       DateTime  @default(now()) @map("begin_at")
+  finishAt      DateTime? @map("finish_at")
 
-//   order       Order       @relation(fields: [orderId], references: [id])
-//   orderStatus OrderStatus @relation(fields: [orderStatusId], references: [id])
+  order       Order       @relation(fields: [orderId], references: [id])
+  orderStatus OrderStatus @relation(fields: [orderStatusId], references: [id])
 
-//   @@unique([orderId, orderStatusId])
-//   @@map("order_trackings")
-// }
+  @@unique([orderId, orderStatusId])
+  @@map("order_trackings")
+}
 
-// model OrderDetail {
-//   orderId   Int   @map("order_id")
-//   variantId Int   @map("variant_id")
-//   quantity  Int
-//   price     Float
-//   discount  Float @default(0)
+model OrderDetail {
+  orderId   Int   @map("order_id")
+  variantId Int   @map("variant_id")
+  quantity  Int
+  price     Float
+  discount  Float @default(0)
 
-//   order   Order   @relation(fields: [orderId], references: [id])
-//   variant Variant @relation(fields: [variantId], references: [id])
+  order   Order   @relation(fields: [orderId], references: [id])
+  variant Variant @relation(fields: [variantId], references: [id])
 
-//   @@id([orderId, variantId])
-//   @@map("order_details")
-// }
+  @@id([orderId, variantId])
+  @@map("order_details")
+}
 
-// model Coupon {
-//   id                Int      @id @default(autoincrement()) @map("coupon_id")
-//   code              String   @unique
-//   discountType      String
-//   discountValue     Float
-//   startDate         DateTime @map("start_date")
-//   endDate           DateTime @map("end_date")
-//   quantity          Int
-//   visible           Boolean  @default(true)
-//   collectedQuantity Int      @default(0) @map("collected_quantity")
-//   currentUse        Int      @default(0) @map("current_use")
-//   minimumPriceToUse Float    @map("minumin_price_to_use")
+model Coupon {
+  id                Int      @id @default(autoincrement()) @map("coupon_id")
+  code              String   @unique
+  discountType      String
+  discountValue     Float
+  startDate         DateTime @map("start_date")
+  endDate           DateTime @map("end_date")
+  quantity          Int
+  visible           Boolean  @default(true)
+  collectedQuantity Int      @default(0) @map("collected_quantity")
+  currentUse        Int      @default(0) @map("current_use")
+  minimumPriceToUse Float    @map("minumin_price_to_use")
 
-//   accountsCollected CollectedCoupons[]
-//   ordersUsed        Order[]
+  accountsCollected CollectedCoupons[]
+  ordersUsed        Order[]
 
-//   createdAt DateTime @default(now()) @map("created_at")
-//   updatedAt DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-//   @@map("coupons")
-// }
+  @@map("coupons")
+}
 
-// model CollectedCoupons {
-//   accountId Int     @map("account_id")
-//   couponId  Int     @map("coupon_id")
-//   used      Boolean @default(false)
+model CollectedCoupons {
+  accountId Int     @map("account_id")
+  couponId  Int     @map("coupon_id")
+  used      Boolean @default(false)
 
-//   account Account @relation(fields: [accountId], references: [id])
-//   coupon  Coupon  @relation(fields: [couponId], references: [id])
+  account Account @relation(fields: [accountId], references: [id])
+  coupon  Coupon  @relation(fields: [couponId], references: [id])
 
-//   createdAt DateTime @default(now()) @map("created_at")
-//   updatedAt DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-//   @@id([accountId, couponId])
-//   @@map("account_coupons")
-// }
+  @@id([accountId, couponId])
+  @@map("account_coupons")
+}
 
 model ProductDiscount {
   id            Int      @id @default(autoincrement()) @map("product_discount_id")

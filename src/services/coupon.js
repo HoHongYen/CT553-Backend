@@ -45,6 +45,14 @@ class CouponService {
     });
   }
 
+  static async delete(couponId) {
+    return await prisma.coupon.delete({
+      where: {
+        id: couponId,
+      },
+    });
+  }
+
   static async getAll() {
     return await prisma.coupon.findMany();
   }

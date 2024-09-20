@@ -7,15 +7,15 @@ const { authentication } = require("../../middlewares/auth");
 
 const router = require("express").Router();
 
-router.use(authentication);
+// router.use(authentication);
 
 router.post(
   "/",
   body("code")
     .notEmpty()
-    .withMessage("Coupon code is missing")
-    .isLength({ min: 8, max: 8 })
-    .withMessage("Coupon code must be 8 characters long"),
+    .withMessage("Coupon code is missing"),
+    // .isLength({ min: 8, max: 8 })
+    // .withMessage("Coupon code must be 8 characters long"),
   body("discountType")
     .notEmpty()
     .withMessage("Discount type is missing")
@@ -67,5 +67,7 @@ router.get("/", asyncHandler(CouponController.getAllCoupons));
 router.get("/valid", asyncHandler(CouponController.getValidCoupons));
 
 router.get("/:code", asyncHandler(CouponController.getByCode));
+
+router.delete("/:couponId", asyncHandler(CouponController.deleteCoupon));
 
 module.exports = router;
