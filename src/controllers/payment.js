@@ -96,7 +96,7 @@ class PaymentController {
         `${process.env.FRONTEND_URL}/tai-khoan/quan-ly-don-hang/${orderId}?code=${vnp_Params["vnp_ResponseCode"]}`
       );
     } else {
-      res.json({ code: "97" });
+      res.json({ code: "97" }); 
     }
   }
 }

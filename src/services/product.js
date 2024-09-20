@@ -290,7 +290,6 @@ class ProductService {
 
     products = products.map((product) => {
       let sortedVariants = product.variants.sort((a, b) => a.price - b.price);
-      console.log("sortedVariants", sortedVariants);
       return { ...product, variants: sortedVariants };
     })
 

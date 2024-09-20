@@ -1,9 +1,10 @@
 const GiaoHangNhanhService = require("./ghn");
 
 class ShippingService {
-  static async calculateFee({ toDistrictId, toWardCode, weightInGram }) {
+  static async calculateShippingFee({ toDistrictId, toWardCode, weightInGram }) {
+    // lay shop thu 2
     const shopInfo = (await GiaoHangNhanhService.getStoreInformation())
-      .shops[0];
+      .shops[1];
 
     const availableServices =
       await GiaoHangNhanhService.getAvailableShippingServices({

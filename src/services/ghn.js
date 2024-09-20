@@ -47,7 +47,7 @@ class GiaoHangNhanhService {
       },
       body: JSON.stringify({
         offset: 0,
-        limit: 1,
+        limit: 2,
       }),
     });
     return (await res.json()).data;
@@ -58,6 +58,7 @@ class GiaoHangNhanhService {
     fromDistrictId,
     toDistrictId,
   }) {
+
     const res = await fetch(
       `${process.env.GHN_V2_API_URL}/shipping-order/available-services`,
       {
@@ -73,6 +74,7 @@ class GiaoHangNhanhService {
         }),
       }
     );
+
     return (await res.json()).data;
   }
 

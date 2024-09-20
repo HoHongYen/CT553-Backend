@@ -13,7 +13,7 @@ router.post(
   body("toDistrictId")
     .notEmpty()
     .withMessage("The district ID of destination is missing"),
-  body("toDistrictId")
+  body("toWardCode")
     .notEmpty()
     .withMessage("The ward code of destination is missing"),
   body("weightInGram")
