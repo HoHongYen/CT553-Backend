@@ -7,7 +7,9 @@ const { authentication } = require("../../middlewares/auth");
 
 const router = require("express").Router();
 
-// router.use(authentication);
+router.get("/valid", asyncHandler(CouponController.getValidCoupons));
+
+router.use(authentication);
 
 router.post(
   "/",
@@ -63,8 +65,6 @@ router.post(
 router.get("/collected", asyncHandler(CouponController.getCollectedCoupons));
 
 router.get("/", asyncHandler(CouponController.getAllCoupons));
-
-router.get("/valid", asyncHandler(CouponController.getValidCoupons));
 
 router.get("/:code", asyncHandler(CouponController.getByCode));
 

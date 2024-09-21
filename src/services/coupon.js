@@ -75,6 +75,8 @@ class CouponService {
       },
     });
 
+    console.log("Collect", accountId, couponCode, coupon);
+
     if (coupon.collectedQuantity === coupon.quantity) {
       throw new BadRequest("Coupon is ran out of stock");
     }
@@ -120,7 +122,7 @@ class CouponService {
   }
 
   static async getCollectedCoupons(accountId) {
-    return await prisma.collectedCoupons.findMany({
+    const res = await prisma.collectedCoupons.findMany({
       where: {
         accountId,
       },
@@ -128,6 +130,8 @@ class CouponService {
         coupon: true,
       },
     });
+    // get coupon that visible
+    return res.filter((item) => item.coupon.visible);
   }
 }
 
