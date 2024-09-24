@@ -14,23 +14,47 @@ const commonIncludeOptionsInProduct = {
   },
   categories: {
     include: {
-      category: true,
+      category: {
+        include: {
+          parent: true,
+        }
+      },
+    }
+  },
+  thumbnailImage: true,
+  viewImage: true,
+  variants: true,
+  productDiscount: {
+    where: {
+      startDate: {
+        lte: new Date().toISOString(),
+      },
+      endDate: {
+        gte: new Date().toISOString(),
+      },
+    },
+  },
+};
+
+const commonIncludeOptionsInProductAdmin = {
+  images: {
+    include: {
+      image: true,
+    },
+  },
+  categories: {
+    include: {
+      category: {
+        include: {
+          parent: true,
+        }
+      },
     }
   },
   thumbnailImage: true,
   viewImage: true,
   variants: true,
   productDiscount: true,
-  // productDiscount: {
-  //   where: {
-  //     startDate: {
-  //       lte: new Date().toISOString(),
-  //     },
-  //     endDate: {
-  //       gte: new Date().toISOString(),
-  //     },
-  //   },
-  // },
 };
 
 const getQueryObjectBasedOnFilters = async (currentQueryObject, filters) => {
@@ -155,4 +179,4 @@ const getQueryFullTextSearch = (currentQueryObject, query) => {
   return queryObject;
 };
 
-module.exports = { getQueryObjectBasedOnFilters, getQueryFullTextSearch, commonIncludeOptionsInProduct };
+module.exports = { getQueryObjectBasedOnFilters, getQueryFullTextSearch, commonIncludeOptionsInProduct, commonIncludeOptionsInProductAdmin };

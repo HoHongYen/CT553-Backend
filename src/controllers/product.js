@@ -141,6 +141,16 @@ class ProductController {
     }).send(res);
   }
 
+  static async getRelatedProductsBasedOnText(req, res) {
+    const productId = +req.params.id;
+
+    new OKResponse({
+      metadata: await ProductService.getRelatedProductsBasedOnText(
+        productId
+      ),
+    }).send(res);
+  }
+
   static async getRecommendedProducts(req, res) {
     const accountId = +req.account.id;
 

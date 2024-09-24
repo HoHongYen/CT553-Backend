@@ -56,6 +56,8 @@ router.get(
   asyncHandler(ProductController.searchByImageUrl)
 );
 
+router.get("/related/:id", asyncHandler(ProductController.getRelatedProductsBasedOnText));
+
 router.get(
   "/recommend",
   authentication,

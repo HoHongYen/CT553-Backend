@@ -15,7 +15,7 @@ const {
 } = require("../utils/generateEmbeddings");
 const { getUploadedImageId, getUploadedImageIds } = require("../utils");
 const { Prisma } = require("@prisma/client");
-const { getQueryObjectBasedOnFilters, commonIncludeOptionsInProduct } = require("../utils/product");
+const { getQueryObjectBasedOnFilters, commonIncludeOptionsInProduct, commonIncludeOptionsInProductAdmin } = require("../utils/product");
 const { getProduct, getAllProductLinks } = require("./uploadTempData/crawlData");
 
 class ProductService {
@@ -240,32 +240,7 @@ class ProductService {
     sortBy,
   }) {
     let query = {
-      include: {
-        images: {
-          include: {
-            image: true,
-          },
-        },
-        categories: {
-          include: {
-            category: true,
-          }
-        },
-        thumbnailImage: true,
-        viewImage: true,
-        variants: true,
-
-        productDiscount: {
-          where: {
-            startDate: {
-              lte: new Date().toISOString(),
-            },
-            endDate: {
-              gte: new Date().toISOString(),
-            },
-          },
-        },
-      },
+      include: commonIncludeOptionsInProduct,
       take: limit,
     };
 
@@ -308,31 +283,7 @@ class ProductService {
       where: {
         id: productId,
       },
-      include: {
-        images: {
-          include: {
-            image: true,
-          },
-        },
-        categories: {
-          include: {
-            category: true,
-          }
-        },
-        thumbnailImage: true,
-        viewImage: true,
-        variants: true,
-        productDiscount: {
-          where: {
-            startDate: {
-              lte: new Date().toISOString(),
-            },
-            endDate: {
-              gte: new Date().toISOString(),
-            },
-          },
-        },
-      },
+      include: commonIncludeOptionsInProduct,
     });
 
     const sortedVariants = product.variants.sort((a, b) => a.price - b.price);
@@ -345,35 +296,7 @@ class ProductService {
       where: {
         slug: productSlug,
       },
-      include: {
-        images: {
-          include: {
-            image: true,
-          },
-        },
-        categories: {
-          include: {
-            category: {
-              include: {
-                parent: true,
-              }
-            },
-          }
-        },
-        thumbnailImage: true,
-        viewImage: true,
-        variants: true,
-        productDiscount: {
-          where: {
-            startDate: {
-              lte: new Date().toISOString(),
-            },
-            endDate: {
-              gte: new Date().toISOString(),
-            },
-          },
-        },
-      },
+      include: commonIncludeOptionsInProduct,
     });
 
     const sortedVariants = product.variants.sort((a, b) => a.price - b.price);
@@ -386,22 +309,7 @@ class ProductService {
       where: {
         slug: productSlug,
       },
-      include: {
-        images: {
-          include: {
-            image: true,
-          },
-        },
-        categories: {
-          include: {
-            category: true,
-          }
-        },
-        thumbnailImage: true,
-        viewImage: true,
-        variants: true,
-        productDiscount: true,
-      },
+      include: commonIncludeOptionsInProductAdmin,
     });
 
     const sortedVariants = product.variants.sort((a, b) => a.price - b.price);
@@ -459,7 +367,6 @@ class ProductService {
       UploadService.destroyImage(imageId),
     ]);
   }
-
 
   static async addCategory(productId, { categoryId }) {
     return await prisma.productCategory.create({
@@ -665,13 +572,49 @@ class ProductService {
     return sortedProducts;
   }
 
+  // hien thi 5 san pham lien quan
+  static async getRelatedProductsBasedOnText(productId) {
+    const productEmbedding =
+      await prisma.$queryRaw`SELECT embedding:: text, product_id FROM product_embeddings WHERE product_id = ${productId} ORDER BY product_id ASC; `;
+
+    const recommendProductIds = [];
+
+    let result = await prisma.$queryRaw`SELECT 1 - (embedding <=> ${productEmbedding[0].embedding
+      }::vector) AS cosine_similarity, product_id FROM product_embeddings WHERE product_id <> ${productId}
+ORDER BY cosine_similarity DESC LIMIT 5; `;
+
+    console.log("result", result);
+
+    for (let item of result) {
+      recommendProductIds.push(item.product_id);
+    }
+
+    const products = await prisma.product.findMany({
+      where: {
+        id: {
+          in: recommendProductIds,
+        },
+      },
+      include: commonIncludeOptionsInProduct,
+    });
+
+    // sort by result order
+    const sortedProducts = [];
+    for (let item of result) {
+      const product = products.find((product) => product.id === item.product_id);
+      sortedProducts.push(product);
+    }
+    return sortedProducts;
+  }
+
+
   static async getRecommendProductsBasedOnOrders(accountId) {
     const orders = await prisma.order.findMany({
       where: {
         buyerId: accountId,
       },
       include: {
-        OrderDetail: {
+        orderDetail: {
           include: {
             variant: {
               select: {
@@ -692,7 +635,7 @@ class ProductService {
     const productIds = new Set();
 
     orders.forEach((order) => {
-      order.OrderDetail.forEach((orderDetail) => {
+      order.orderDetail.forEach((orderDetail) => {
         if (productIds.size > 10) return;
         productIds.add(orderDetail.variant.productId);
       });
@@ -719,6 +662,8 @@ class ProductService {
         )
         }) ORDER BY cosine_similarity DESC LIMIT ${limit}; `;
 
+      console.log("result", result);
+
       for (let item of result) {
         recommendProductIds.push(item.product_id);
         excludedProductIds.push(item.product_id);
@@ -731,38 +676,7 @@ class ProductService {
           in: recommendProductIds,
         },
       },
-      include: {
-        images: {
-          include: {
-            image: true,
-          },
-        },
-        colors: {
-          include: {
-            thumbnailImage: true,
-            productImage: {
-              include: {
-                image: true,
-              },
-            },
-          },
-        },
-        variants: {
-          select: {
-            quantity: true,
-          },
-        },
-        productDiscount: {
-          where: {
-            startDate: {
-              lte: new Date().toISOString(),
-            },
-            endDate: {
-              gte: new Date().toISOString(),
-            },
-          },
-        },
-      },
+      include: commonIncludeOptionsInProduct,
     });
 
     return products;
