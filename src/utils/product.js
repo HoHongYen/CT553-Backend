@@ -110,7 +110,7 @@ const getQueryObjectBasedOnFilters = async (currentQueryObject, filters) => {
     };
   }
 
-  if (type === PRODUCT_SALES || filter?.value === "with-discount") {
+  if (type === PRODUCT_SALES || filter?.value === "dang-giam-gia") {
     if (!queryObject.where) Object.assign(queryObject, { where: {} });
     queryObject.where.productDiscount = {
       some: {
@@ -124,7 +124,7 @@ const getQueryObjectBasedOnFilters = async (currentQueryObject, filters) => {
     };
   }
 
-  if (filter?.value === "no-discount") {
+  if (filter?.value === "khong-giam-gia") {
     if (!queryObject.where) Object.assign(queryObject, { where: {} });
     queryObject.where.productDiscount = {
       none: {

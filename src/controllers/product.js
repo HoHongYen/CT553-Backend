@@ -11,7 +11,6 @@ class ProductController {
   }
 
   static async getAll(req, res) {
-    const page = +req.query.page || 1;
     new OKResponse({
       metadata: await ProductService.getAll({
         type: req.query.type,
@@ -19,7 +18,7 @@ class ProductController {
         limit: +req.query.limit,
         search: req.query.search,
         productIds: req.query.productIds,
-        page,
+        page: +req.query.page || 1,
         filter: req.query.filter,
         filterMinPrice: +req.query.filterMinPrice,
         filterMaxPrice: +req.query.filterMaxPrice,

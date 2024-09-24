@@ -57,7 +57,7 @@ class VariantService {
       data: {
         size,
         price,
-        quantity,
+        quantity: +quantity,
       },
     });
   }
