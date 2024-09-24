@@ -35,7 +35,13 @@ const commonIncludeOptionsInOrder = {
       paymentMethod: true,
       paymentStatus: true,
     },
-  }
+  },
+  orderTracking: {
+    include: true,
+    orderBy: {
+      beginAt: "desc",
+    },
+  },
 }
 
 class OrderService {
@@ -137,6 +143,15 @@ class OrderService {
           orderId: createdOrder.id,
           paymentMethodId,
           paymentStatusId: PAYMENT_STATUS_ID_MAPPING.PENDING,
+        },
+      });
+
+      // create tracking for order
+      await tx.orderTracking.create({
+        data: {
+          orderId: createdOrder.id,
+          orderStatusId: ORDER_STATUS_ID_MAPPING.AWAITING_CONFIRM,
+          beginAt: new Date(),
         },
       });
 
@@ -492,6 +507,15 @@ class OrderService {
       throw new BadRequest("Invalid request");
     }
 
+    // create order tracking
+    await prisma.orderTracking.create({
+      data: {
+        orderId,
+        orderStatusId: +toStatus,
+        beginAt: new Date(),
+      },
+    });
+
     return await prisma.order.update({
       where: { id: orderId },
       data: { currentStatusId: +toStatus },
@@ -501,6 +525,18 @@ class OrderService {
   static async getById(orderId) {
     const order = await prisma.order.findUnique({
       where: {
+        id: orderId,
+      },
+      include: commonIncludeOptionsInOrder,
+    });
+
+    return order;
+  }
+
+  static async customerGetById({ buyerId, orderId }) {
+    const order = await prisma.order.findUnique({
+      where: {
+        buyerId,
         id: orderId,
       },
       include: commonIncludeOptionsInOrder,
@@ -528,6 +564,15 @@ class OrderService {
     ) {
       throw new BadRequest("You can not cancel the delivering order");
     }
+
+    // create order tracking
+    await prisma.orderTracking.create({
+      data: {
+        orderId: foundedOrder.id,
+        orderStatusId: ORDER_STATUS_ID_MAPPING.CANCELED,
+        beginAt: new Date(),
+      },
+    });
 
     return await prisma.$transaction(async (tx) => {
       await Promise.all(

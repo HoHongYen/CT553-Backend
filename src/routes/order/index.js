@@ -25,7 +25,10 @@ router.get("/status-all", asyncHandler(OrderController.getAllOrderStatus));
 //   asyncHandler(OrderController.getById)
 // ); // VALIDATE ADMIN
 
+router.use(authentication);
+
 router.get("/:orderId", asyncHandler(OrderController.getById));
+router.get("/customer/:orderId", asyncHandler(OrderController.customerGetById));
 
 router.put(
   "/:orderId/status",
@@ -43,8 +46,6 @@ router.put(
   validate,
   asyncHandler(OrderController.updateOrderStatus)
 );
-
-router.use(authentication);
 
 router.post(
   "",

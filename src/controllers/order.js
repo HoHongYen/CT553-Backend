@@ -84,6 +84,12 @@ class OrderController {
     }).send(res);
   }
 
+  static async customerGetById(req, res) {
+    new OKResponse({
+      metadata: await OrderService.customerGetById({ buyerId: +req.account.id, orderId: +req.params.orderId }),
+    }).send(res);
+  }
+
   static async getAllOrderStatus(req, res) {
     new OKResponse({
       metadata: await OrderService.getAllOrderStatus(),
