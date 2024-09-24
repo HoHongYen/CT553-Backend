@@ -47,7 +47,7 @@ model Account {
   roleId Int  @default(3) @map("role_id")
   role   Role @relation(fields: [roleId], references: [id])
 
-  addresses Address[]
+  addresses        Address[]
   orders           Order[]
   collectedCoupons CollectedCoupons[]
 
@@ -167,9 +167,9 @@ model Variant {
 
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  OrderDetail OrderDetail[]
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+  orderDetail OrderDetail[]
 
   @@map("variants")
 }
@@ -214,7 +214,7 @@ model OrderStatus {
   name String
 
   orders        Order[]
-  OrderTracking OrderTracking[]
+  orderTracking OrderTracking[]
 
   @@map("order_statuses")
 }
@@ -232,9 +232,9 @@ model Order {
   buyer           Account         @relation(fields: [buyerId], references: [id], onDelete: Cascade)
   currentStatus   OrderStatus     @relation(fields: [currentStatusId], references: [id])
   deliveryAddress Address         @relation(fields: [deliveryAddressId], references: [id])
-  Payment         Payment?
-  OrderTracking   OrderTracking[]
-  OrderDetail     OrderDetail[]
+  payment         Payment?
+  orderTracking   OrderTracking[]
+  orderDetail     OrderDetail[]
   usedCouponId    Int?            @map("used_coupon_id")
   usedCoupon      Coupon?         @relation(fields: [usedCouponId], references: [id])
 

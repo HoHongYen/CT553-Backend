@@ -1,8 +1,42 @@
 const prisma = require("../config/prismaClient");
 const { ORDER_STATUS_ID_MAPPING } = require("../constant/orderStatus");
 const { PAYMENT_STATUS_ID_MAPPING } = require("../constant/paymentStatus");
+const { PAYMENT_METHOD_ID_MAPPING } = require("../constant/paymentMethod");
 const CategoryService = require("./category");
 const { BadRequest } = require("../response/error");
+
+const commonIncludeOptionsInOrder = {
+  buyer: true,
+  deliveryAddress: true,
+  orderDetail: {
+    include: {
+      variant: {
+        include: {
+          product: {
+            select: {
+              id: true,
+              name: true,
+              thumbnailImage: {
+                select: {
+                  path: true,
+                },
+              },
+              productDiscount: true,
+              variants: true,
+            },
+          },
+        },
+      },
+    },
+  },
+  currentStatus: true,
+  payment: {
+    include: {
+      paymentMethod: true,
+      paymentStatus: true,
+    },
+  }
+}
 
 class OrderService {
   static async create({
@@ -25,7 +59,7 @@ class OrderService {
       usedCouponId,
     });
 
-    return await prisma.$transaction(async (tx) => {
+    const createdOrder = await prisma.$transaction(async (tx) => {
       const createdOrder = await tx.order.create({
         data: {
           totalPrice,
@@ -133,24 +167,136 @@ class OrderService {
 
       return createdOrder;
     });
-  }
 
-  static async getAll(filter) {
-    const orders = await prisma.order.findMany({
-      include: {
-        buyer: true,
-        currentStatus: true,
-        Payment: {
-          include: {
-            paymentStatus: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
+    // get payment method
+    const paymentMethod = await prisma.paymentMethod.findUnique({
+      where: {
+        id: paymentMethodId,
       },
     });
-    return orders;
+
+    return {
+      ...createdOrder,
+      paymentMethod,
+    };
+  }
+
+  static async getAll({
+    customerSearch,
+    beginDate,
+    endDate,
+    orderStatusId = ORDER_STATUS_ID_MAPPING.ALL,
+    paymentMethodId = PAYMENT_METHOD_ID_MAPPING.ALL,
+    paymentStatusId = PAYMENT_STATUS_ID_MAPPING.ALL,
+    sortBy,
+    page = 1,
+    limit,
+  }) {
+
+    let query = {
+      include: commonIncludeOptionsInOrder,
+      take: limit,
+      orderBy: {
+        createdAt: "desc",
+      }
+    };
+
+    if (+orderStatusId != ORDER_STATUS_ID_MAPPING.ALL) {
+      if (!query.where) Object.assign(query, { where: {} });
+      query.where.currentStatusId = orderStatusId;
+    }
+
+    if (+paymentMethodId != PAYMENT_STATUS_ID_MAPPING.ALL) {
+      if (!query.where) Object.assign(query, { where: {} });
+      if (!query.where.payment) Object.assign(query.where, { payment: {} });
+      query.where.payment.paymentMethodId = paymentMethodId;
+    }
+
+    if (+paymentStatusId != PAYMENT_STATUS_ID_MAPPING.ALL) {
+      if (!query.where) Object.assign(query, { where: {} });
+      if (!query.where.payment) Object.assign(query.where, { payment: {} });
+      query.where.payment.paymentStatusId = paymentStatusId;
+    }
+
+    if (customerSearch) {
+      // if customerSearch is a number, search by id
+      let buyer = [];
+      if (!isNaN(customerSearch)) {
+        buyer = await prisma.account.findMany({
+          where: {
+            id: {
+              equals: +customerSearch,
+            },
+          },
+          select: {
+            id: true,
+          },
+        });
+      } else {
+        buyer = await prisma.account.findMany({
+          where: {
+            fullName: {
+              contains: customerSearch,
+              mode: "insensitive",
+            },
+          },
+          select: {
+            id: true,
+          },
+        });
+      }
+
+      // find all orders of these buyers
+      if (!query.where) Object.assign(query, { where: {} });
+      if (buyer.length > 0) {
+        query.where.buyerId = {
+          in: buyer.map((b) => b.id),
+        };
+      } else {
+        query.where.buyerId = -1;
+      }
+    }
+
+    if (beginDate && endDate) {
+      // end date is the next day of the input
+
+      if (!query.where) Object.assign(query, { where: {} });
+      query.where.createdAt = {
+        gte: new Date(beginDate),
+        lt: new Date(endDate + "T23:59:59.000Z"),
+      };
+    }
+
+    console.log("query.where", query.where);
+
+    // sort
+    if (sortBy?.field === "createdAt") {
+      query.orderBy = {
+        createdAt: sortBy.direction,
+      };
+    } else if (sortBy?.field === "finalPrice") {
+      query.orderBy = {
+        finalPrice: sortBy.direction,
+      };
+    }
+
+    // pagination
+    const count = await prisma.order.count({
+      where: query.where,
+    });
+
+    const offset = page > 1 ? (page - 1) * limit : 0;
+    const totalPages = Math.ceil(count / limit);
+
+    let orders = await prisma.order.findMany({ ...query, skip: offset });
+
+    return {
+      orders,
+      pagination: {
+        totalOrders: count,
+        totalPages,
+      },
+    };
   }
 
   static async getAllForReport() {
@@ -285,41 +431,52 @@ class OrderService {
     return orders;
   }
 
-  static async getOrdersOfBuyerByOrderStatus({ buyerId, orderStatusId }) {
-    const query = {
-      buyerId,
+  static async getOrdersOfBuyerByOrderStatus({ buyerId, orderStatusId, sortBy, page, limit }) {
+
+    let query = {
+      where: {
+        buyerId,
+      },
+      include: commonIncludeOptionsInOrder,
+      take: limit,
+      orderBy: {
+        createdAt: "desc",
+      }
     };
 
     if (+orderStatusId != ORDER_STATUS_ID_MAPPING.ALL) {
-      query.currentStatusId = orderStatusId;
+      query.where.currentStatusId = orderStatusId;
     }
 
-    return await prisma.order.findMany({
-      where: query,
-      include: {
-        OrderDetail: {
-          include: {
-            variant: {
-              include: {
-                color: {
-                  include: {
-                    productImage: {
-                      include: {
-                        image: true,
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-        currentStatus: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
+    // sort
+    if (sortBy?.field === "createdAt") {
+      query.orderBy = {
+        createdAt: sortBy.direction,
+      };
+    } else if (sortBy?.field === "finalPrice") {
+      query.orderBy = {
+        finalPrice: sortBy.direction,
+      };
+    }
+
+    // pagination
+    const count = await prisma.order.count({
+      where: query.where,
     });
+
+    const offset = page > 1 ? (page - 1) * limit : 0;
+    const totalPages = Math.ceil(count / limit);
+
+    let orders = await prisma.order.findMany({ ...query, skip: offset });
+
+    query;
+    return {
+      orders,
+      pagination: {
+        totalOrders: count,
+        totalPages,
+      },
+    };
   }
 
   static async updateOrderStatus(orderId, { fromStatus, toStatus }) {
@@ -342,52 +499,21 @@ class OrderService {
   }
 
   static async getById(orderId) {
-    return await prisma.order.findUnique({
+    const order = await prisma.order.findUnique({
       where: {
         id: orderId,
       },
-      include: {
-        deliveryAddress: true,
-        currentStatus: true,
-        OrderDetail: {
-          include: {
-            variant: {
-              include: {
-                product: {
-                  select: {
-                    name: true,
-                  },
-                },
-                color: {
-                  include: {
-                    productImage: {
-                      include: {
-                        image: true,
-                      },
-                    },
-                  },
-                },
-                size: true,
-              },
-            },
-          },
-        },
-        buyer: true,
-        Payment: {
-          include: {
-            paymentMethod: true,
-            paymentStatus: true,
-          },
-        },
-      },
+      include: commonIncludeOptionsInOrder,
     });
+
+    return order;
   }
 
   static async cancel(orderId) {
     const foundedOrder = await prisma.order.findUnique({
       where: { id: orderId },
       include: {
-        OrderDetail: {
+        orderDetail: {
           include: {
             variant: true,
           },
@@ -405,7 +531,7 @@ class OrderService {
 
     return await prisma.$transaction(async (tx) => {
       await Promise.all(
-        foundedOrder.OrderDetail.map((item) =>
+        foundedOrder.orderDetail.map((item) =>
           tx.variant.update({
             where: {
               id: item.variantId,
@@ -421,7 +547,7 @@ class OrderService {
 
       const productSoldNumberToUpDate = [];
 
-      foundedOrder.OrderDetail.forEach((item) => {
+      foundedOrder.orderDetail.forEach((item) => {
         const foundProductIndex = productSoldNumberToUpDate.findIndex(
           (product) => product.productId === item.variant.productId
         );
@@ -465,7 +591,7 @@ class OrderService {
     const foundOrder = await prisma.order.findUnique({
       where: { id: orderId },
       include: {
-        Payment: true,
+        payment: true,
       },
     });
 
@@ -522,17 +648,19 @@ class OrderService {
       let productDiscount = 0;
       if (variant.product.productDiscount.length > 0) {
         const discount = variant.product.productDiscount[0];
-        if (discount.discountType === "percentage") {
-          productDiscount =
-            (variant.product.price * discount.discountValue) / 100;
-        } else {
-          productDiscount = discount.discountValue;
+        if (discount.endDate > new Date()) {
+          if (discount.discountType === "percentage") {
+            productDiscount =
+              (variant.price * discount.discountValue) / 100;
+          } else {
+            productDiscount = discount.discountValue;
+          }
         }
       }
       return (
         prev +
         +quantityInOrder[variant.id] *
-        (+variant.product.price - productDiscount)
+        (+variant.price - productDiscount)
       );
     }, 0);
 
