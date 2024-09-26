@@ -10,6 +10,7 @@ router.use("/products", require("./product"));
 router.use("/variants", require("./variant/variantInfo"));
 router.use("/upload", require("./upload"));
 router.use("/addresses", require("./address"));
+router.use("/reviews", require("./review"));
 router.use("/shippings", require("./shipping"));
 router.use("/payments", require("./payment"));
 router.use("/orders", require("./order"));

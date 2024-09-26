@@ -16,6 +16,7 @@ const commonIncludeOptionsInOrder = {
             select: {
               id: true,
               name: true,
+              slug: true,
               thumbnailImage: {
                 select: {
                   path: true,

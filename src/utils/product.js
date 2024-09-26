@@ -34,6 +34,7 @@ const commonIncludeOptionsInProduct = {
       },
     },
   },
+  reviews: true,
 };
 
 const commonIncludeOptionsInProductAdmin = {
@@ -55,6 +56,7 @@ const commonIncludeOptionsInProductAdmin = {
   viewImage: true,
   variants: true,
   productDiscount: true,
+  reviews: true,
 };
 
 const getQueryObjectBasedOnFilters = async (currentQueryObject, filters) => {

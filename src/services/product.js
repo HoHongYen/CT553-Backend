@@ -1,7 +1,9 @@
 const slugify = require("slugify");
 const prisma = require("../config/prismaClient");
 const UploadService = require("./upload");
-const { readFileSync, rm } = require("fs");
+// const { readFileSync, rm, } = require("fs");
+const fs = require("fs").promises;
+const path = require("path");
 const {
   PRODUCT_ALL,
   PRODUCT_NEWEST,
@@ -119,10 +121,10 @@ class ProductService {
 
   static async crawlCategory({ url }) {
     const links = await getAllProductLinks(url);
-    return await ProductService.crawlMany({ categorySlugs: ["tranh-phong-ngu", "tranh-phong-khach"], urls: links });
+    return await ProductService.crawlMany({ categorySlugs: ["tranh-hoa-sen"], urls: links });
   }
 
-  static async create({ uploadedImageIds, categoryIds, variants, ...data }) {
+  static async create({ uploadedImageIds, categoryIds, variants, discounts, ...data }) {
     const newProduct = await prisma.$transaction(async (tx) => {
       const createdProduct = await tx.product.create({
         data: {
@@ -136,6 +138,16 @@ class ProductService {
           price: +variant.price,
           quantity: +variant.quantity,
           productId: createdProduct.id,
+        })),
+      });
+
+      await tx.productDiscount.createMany({
+        data: discounts.map((discount) => ({
+          productId: createdProduct.id,
+          discountType: discount.discountType,
+          discountValue: +discount.discountValue,
+          startDate: new Date(discount.startDate).toISOString(),
+          endDate: new Date(discount.endDate).toISOString(),
         })),
       });
 
@@ -265,7 +277,9 @@ class ProductService {
 
     products = products.map((product) => {
       let sortedVariants = product.variants.sort((a, b) => a.price - b.price);
-      return { ...product, variants: sortedVariants };
+      // calculate sum of quantity of variants
+      let totalQuantity = sortedVariants.reduce((acc, variant) => acc + variant.quantity, 0);
+      return { ...product, variants: sortedVariants, totalQuantity };
     })
 
     query;
@@ -683,6 +697,15 @@ ORDER BY cosine_similarity DESC LIMIT 5; `;
   }
 
   static async imageSearch(imageUrl, uploadedImagePath) {
+    // remove all files in uploads folder
+    const currentFile = path.basename(imageUrl);
+    await ProductService.removeAllFilesAsync(path.join(__dirname, "..", "..", "uploads"), currentFile)
+      .then(() => console.log('All files have been removed asynchronously.'))
+      .catch(console.error);
+
+    // const embeddingRESULT = await generateEmbeddingsFromImageUrl(imageUrl);
+    // console.log("embeddingRESULT", embeddingRESULT);
+
     const embeddings = Array.from(
       await generateEmbeddingsFromImageUrl(imageUrl)
     );
@@ -718,15 +741,27 @@ ORDER BY cosine_similarity DESC LIMIT 5; `;
       products.push({ ...product, similarImageId: foundResult.image_id });
     }
 
-    if (uploadedImagePath) {
-      rm(uploadedImagePath, (err) => {
-        if (err) {
-          console.error(err);
-        }
-      });
-    }
+    // if (uploadedImagePath) {
+    //   rm(uploadedImagePath, (err) => {
+    //     if (err) {
+    //       console.error(err);
+    //     }
+    //   });
+    // }
 
     return products;
+  }
+
+  static async removeAllFilesAsync(directory, currentFile) {
+    const files = await fs.readdir(directory);
+
+    for (const file of files) {
+      if (file === currentFile) {
+        continue;
+      }
+      const filePath = path.join(directory, file);
+      await fs.unlink(filePath);
+    }
   }
 }
 

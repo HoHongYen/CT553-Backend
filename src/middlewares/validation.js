@@ -61,6 +61,16 @@ const existProduct = async (productId) => {
   if (!foundProduct) throw new BadRequest("Product not found");
 };
 
+const existReview = async (reviewId) => {
+  if (!reviewId) return true;
+  if (!Number.parseInt(reviewId)) throw new BadRequest("Review not found");
+  const foundReview = await prisma.review.findUnique({
+    where: { id: +reviewId },
+  });
+
+  if (!foundReview) throw new BadRequest("Review not found");
+};
+
 const existProductWithSlug = async (productSlug) => {
   if (!productSlug) return true;
   const foundProduct = await prisma.product.findUnique({
@@ -80,6 +90,18 @@ const existProductImage = async (productImageId, { req }) => {
     },
   });
   if (!foundProductImage) throw new BadRequest("Product image not found");
+};
+
+const existReviewImage = async (reviewImageId, { req }) => {
+  if (!reviewImageId) return true;
+  if (!Number.parseInt(reviewImageId))
+    throw new BadRequest("Review image not found");
+  const foundReviewImage = await prisma.reviewImage.findUnique({
+    where: {
+      id: +reviewImageId,
+    },
+  });
+  if (!foundReviewImage) throw new BadRequest("Review image not found");
 };
 
 const existProductCategory = async (productCategoryId, { req }) => {
@@ -176,6 +198,19 @@ const existAddressOfAccount = async (addressId, { req }) => {
   if (!foundAddress) throw new BadRequest("Address not found");
 };
 
+const existReviewOfAccount = async (reviewId, { req }) => {
+  if (!reviewId) return true;
+
+  const foundReview = await prisma.review.findFirst({
+    where: {
+      id: +reviewId,
+      accountId: +req.account.id,
+    },
+  });
+
+  if (!foundReview) throw new BadRequest("Review not found");
+};
+
 const existOrderOfAccount = async (orderId, { req }) => {
   if (!orderId) return true;
 
@@ -231,6 +266,9 @@ module.exports = {
   existProductImage,
   existProductCategory,
   existVariant,
+  existReview,
+  existReviewImage,
+  existReviewOfAccount,
   existUploadedImage,
   existProvince,
   existDistrictOfProvince,

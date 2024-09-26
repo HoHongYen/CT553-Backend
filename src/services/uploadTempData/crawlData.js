@@ -135,8 +135,9 @@ const getAllProductLinks = async (url) => {
 		let link = $(element).attr('href');
 		links.push(link);
 	})
+	links = links.slice(0, 5);
 	console.log("links", links);
-	return links.slice(5, 10);
+	return links;
 }
 
 module.exports = {

@@ -69,7 +69,6 @@ class ProductController {
         +req.params.productImageId,
         req.filename
       ),
-      // metadata: {},
     }).send(res);
   }
 
