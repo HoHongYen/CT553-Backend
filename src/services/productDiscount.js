@@ -29,7 +29,7 @@ class ProductDiscountService {
         discountType,
         discountValue: +discountValue,
         startDate: new Date(startDate).toISOString(),
-        endDate: new Date(endDate).toISOString(),
+        endDate: new Date(endDate + "T23:59:59.000Z").toISOString(),
       },
     });
   }
@@ -56,7 +56,7 @@ class ProductDiscountService {
         discountType,
         discountValue: +discountValue,
         startDate: new Date(startDate).toISOString(),
-        endDate: new Date(endDate).toISOString(),
+        endDate: new Date(endDate + "T23:59:59.000Z").toISOString(),
       },
     });
   }

@@ -283,8 +283,6 @@ class OrderService {
       };
     }
 
-    console.log("query.where", query.where);
-
     // sort
     if (sortBy?.field === "createdAt") {
       query.orderBy = {

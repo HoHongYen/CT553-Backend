@@ -5,6 +5,7 @@ const {
   PRODUCT_TRENDING,
   PRODUCT_SALES,
 } = require("../constant/productType");
+const { commonIncludeOptionsInReview }  = require("../utils/commonInclude");
 
 const commonIncludeOptionsInProduct = {
   images: {
@@ -34,7 +35,9 @@ const commonIncludeOptionsInProduct = {
       },
     },
   },
-  reviews: true,
+  reviews: {
+    include : commonIncludeOptionsInReview
+  },
 };
 
 const commonIncludeOptionsInProductAdmin = {
@@ -56,7 +59,9 @@ const commonIncludeOptionsInProductAdmin = {
   viewImage: true,
   variants: true,
   productDiscount: true,
-  reviews: true,
+  reviews: {
+    include : commonIncludeOptionsInReview
+  },
 };
 
 const getQueryObjectBasedOnFilters = async (currentQueryObject, filters) => {
