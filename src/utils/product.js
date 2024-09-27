@@ -7,6 +7,7 @@ const {
 } = require("../constant/productType");
 const { commonIncludeOptionsInReview }  = require("../utils/commonInclude");
 
+// for client
 const commonIncludeOptionsInProduct = {
   images: {
     include: {
@@ -35,7 +36,12 @@ const commonIncludeOptionsInProduct = {
       },
     },
   },
+  // do not show invisible reviews
+  // hide invisible reviews
   reviews: {
+    where: {
+      visible: true,
+    },
     include : commonIncludeOptionsInReview
   },
 };
