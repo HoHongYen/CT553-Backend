@@ -24,8 +24,16 @@ class AccountController {
 
   static async getAll(req, res) {
     new CreatedResponse({
-      message: "Get all users successfully",
-      metadata: await AccountService.getAll(),
+      metadata: await AccountService.getAll({
+        customerSearch: req.query.customerSearch,
+        active: req.query.active,
+        gender: req.query.gender,
+        role: req.query.role,
+        limit: +req.query.limit,
+        page: +req.query.page || 1,
+        sortBy: req.query.sortBy,
+
+      }),
     }).send(res);
   }
 

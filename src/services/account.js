@@ -3,14 +3,82 @@ const bcrypt = require("bcrypt");
 const { BadRequest } = require("../response/error");
 
 class AccountService {
-  static async getAll() {
-    const accounts = await prisma.account.findMany({
+  static async getAll({ customerSearch, active, role, gender, sortBy, page, limit }) {
+
+    let query = {
       include: {
         avatar: true,
       },
-    });
-    return accounts;
+      take: limit,
+      orderBy: {
+        createdAt: "desc"
+      }
+    }
+
+    // search
+    if (customerSearch) {
+      // if customerSearch is a number, search by id
+      if (!query.where) Object.assign(query, { where: {} });
+      if (!isNaN(customerSearch)) {
+        query.where = {
+          id: {
+            equals: +customerSearch,
+          },
+        }
+      } else {
+        query.where = {
+          fullName: {
+            contains: customerSearch,
+            mode: "insensitive",
+          }
+        }
+      }
+    }
+
+    // filter
+    if (active !== "all") {
+      if (!query.where) Object.assign(query, { where: {} });
+      query.where.active = active === "true";
+    }
+
+    if (role !== "all") {
+      if (!query.where) Object.assign(query, { where: {} });
+      query.where.roleId = +role;
+    }
+
+    if (gender !== "all") {
+      if (!query.where) Object.assign(query, { where: {} });
+      query.where.gender = gender === "true";
+    }
+
+    // sort
+    if (sortBy?.field === "createdAt") {
+      query.orderBy = {
+        createdAt: sortBy.direction,
+      };
+    } else if (sortBy?.field === "fullName") {
+      query.orderBy = {
+        fullName: sortBy.direction,
+      };
+    }
+
+    // pagination
+    const count = await prisma.account.count({
+      where: query.where,
+    })
+
+    const offset = page > 1 ? (page - 1) * limit : 0;
+    const totalPages = Math.ceil(count / limit);
+    let accounts = await prisma.account.findMany({ ...query, skip: offset });
+
+    return {
+      accounts, pagination: {
+        totalAccounts: count,
+        totalPages
+      }
+    }
   }
+
 
   static async updateInformation(accountId, updatedData) {
     if (updatedData.birthday) {

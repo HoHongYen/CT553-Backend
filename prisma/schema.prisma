@@ -54,7 +54,7 @@ model Account {
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-  Review    Review[]
+  review    Review[]
 
   @@map("accounts")
 }
@@ -279,14 +279,14 @@ model OrderDetail {
 }
 
 model Review {
-  id        Int    @id @default(autoincrement()) @map("review_id")
-  rating    Float
-  comment   String
+  id      Int    @id @default(autoincrement()) @map("review_id")
+  rating  Float?
+  comment String
 
-  orderId   Int    @map("order_id")
+  orderId   Int      @map("order_id")
   variantId Int      @map("variant_id")
   accountId Int      @map("account_id")
-  productId Int    @map("product_id")
+  productId Int      @map("product_id")
   visible   Boolean  @default(true)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -295,6 +295,11 @@ model Review {
   account     Account       @relation(fields: [accountId], references: [id])
   product     Product       @relation(fields: [productId], references: [id])
   reviewImage ReviewImage[]
+
+  replyToReviewId Int?    @map("reply_to_review_id")
+  replyToReview   Review? @relation("reviewRelation", fields: [replyToReviewId], references: [id])
+
+  replyByReview Review[] @relation("reviewRelation")
 
   @@map("reviews")
 }

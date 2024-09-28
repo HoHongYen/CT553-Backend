@@ -32,6 +32,13 @@ router.get(
     asyncHandler(ReviewController.getAllReviews)
 );
 
+// get top 3 newest reviews and highest rating reviews of all products
+router.get(
+    "/top",
+    validate,
+    asyncHandler(ReviewController.getTopReviews)
+);
+
 // get all reviews of a product
 router.get(
     "/:productId",
@@ -39,8 +46,6 @@ router.get(
     validate,
     asyncHandler(ReviewController.getAllReviewsOfProduct)
 );
-
-
 
 router.post(
     "/",

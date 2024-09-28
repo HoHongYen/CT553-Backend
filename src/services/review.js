@@ -132,7 +132,7 @@ class ReviewService {
     // filter
     if (visible !== "all") {
       if (!query.where) Object.assign(query, { where: {} });
-      query.where.visible = visible === true;
+      query.where.visible = visible === "true";
     }
 
     // if (hasReply !== "all") {
@@ -166,6 +166,29 @@ class ReviewService {
         totalPages
       }
     }
+  }
+
+  // get top reviews for client
+  static async getTopReviews() {
+
+    let query = {
+      where: {
+        visible: true,
+      },
+      include: commonIncludeOptionsInReview,
+      take: 10,
+      orderBy: {
+        rating: "desc",
+        // createdAt: "desc"
+      }
+    }
+
+    let reviews = await prisma.review.findMany({ ...query });
+
+    // get top 3 newest reviews
+    const top3NewestReviews = reviews.sort((a, b) => b.createdAt - a.createdAt).slice(0, 3);
+
+    return top3NewestReviews;
   }
 
   // for client
