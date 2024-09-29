@@ -50,6 +50,13 @@ class AccountController {
       metadata: await AccountService.deleteAll(req.body),
     }).send(res);
   }
+
+  static async toggleActiveAccount(req, res) {
+    new CreatedResponse({
+      metadata: await AccountService.toggleActive(req.params.accountId),
+    }).send(res);
+  }
+
 }
 
 module.exports = AccountController;

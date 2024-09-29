@@ -16,6 +16,15 @@ const {
 
 const router = require("express").Router();
 
+// get top 3 newest reviews and highest rating reviews of all products
+router.get(
+    "/top",
+    validate,
+    asyncHandler(ReviewController.getTopReviews)
+);
+
+router.use(authentication);
+
 // get all reviews of an account by admin
 router.get(
     "/account/:accountId",
@@ -23,20 +32,11 @@ router.get(
     asyncHandler(ReviewController.getAllReviewsOfAccount)
 );
 
-router.use(authentication);
-
 // get all review by admin
 router.get(
     "/",
     validate,
     asyncHandler(ReviewController.getAllReviews)
-);
-
-// get top 3 newest reviews and highest rating reviews of all products
-router.get(
-    "/top",
-    validate,
-    asyncHandler(ReviewController.getTopReviews)
 );
 
 // get all reviews of a product

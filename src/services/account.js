@@ -142,6 +142,27 @@ class AccountService {
     const deletedAccount = await prisma.account.deleteMany();
     return deletedAccount;
   }
+
+  static async toggleActive(accountId) {
+
+    const account = await prisma.account.findUnique({
+      where: {
+        id: +accountId,
+      },
+      select: {
+        active: true,
+      },
+    });
+
+    return prisma.account.update({
+      where: {
+        id: +accountId,
+      },
+      data: {
+        active: !account.active,
+      },
+    });
+  }
 }
 
 module.exports = AccountService;

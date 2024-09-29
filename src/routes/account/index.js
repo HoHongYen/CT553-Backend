@@ -25,4 +25,14 @@ router.put(
   asyncHandler(AccountController.changePassword)
 );
 
+// lock account
+router.put(
+  "/toggleActive/:accountId",
+  param("accountId")
+      .notEmpty()
+      .withMessage("account ID is missing"),
+  validate,
+  asyncHandler(AccountController.toggleActiveAccount)
+);
+
 module.exports = router;
