@@ -32,7 +32,6 @@ class AccountController {
         limit: +req.query.limit,
         page: +req.query.page || 1,
         sortBy: req.query.sortBy,
-
       }),
     }).send(res);
   }

@@ -4,7 +4,6 @@ const { BadRequest } = require("../response/error");
 
 class AccountService {
   static async getAll({ customerSearch, active, role, gender, sortBy, page, limit }) {
-
     let query = {
       include: {
         avatar: true,
@@ -14,7 +13,6 @@ class AccountService {
         createdAt: "desc"
       }
     }
-
     // search
     if (customerSearch) {
       // if customerSearch is a number, search by id

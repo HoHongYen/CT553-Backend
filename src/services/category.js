@@ -1,3 +1,4 @@
+const { ar } = require("date-fns/locale");
 const prisma = require("../config/prismaClient");
 
 class CategoryService {
@@ -36,6 +37,98 @@ class CategoryService {
     });
   }
 
+  static async getAllForAdmin({ categorySearch, isRootCategory, limit, page, sortBy }) {
+
+    let query = {
+      include: {
+        children: {
+          include: {
+            parent: {
+              select: {
+                slug: true,
+              }
+            },
+            thumbnailImage: true,
+          },
+          orderBy: {
+            children: {
+              _count: "desc",
+            },
+          },
+        },
+        thumbnailImage: true,
+      },
+      orderBy: {
+        createdAt: "desc"
+      }
+    };
+
+    // get all root categories
+    const rootCategories = await prisma.category.findMany({
+      where: {
+        parentId: null,
+      },
+      include: query.include,
+      orderBy: query.orderBy,
+    });
+
+    let arr = [...rootCategories];
+    rootCategories.map((category) => {
+      arr = [...arr, ...category.children];
+    });
+
+    // search
+    if (categorySearch) {
+      // if categorySearch is a number, search by id
+      if (!query.where) Object.assign(query, { where: {} });
+      if (!isNaN(categorySearch)) {
+        arr = arr.filter((category) => category.id === +categorySearch);
+      } else {
+        arr = arr.filter((category) => category.name.toLowerCase().includes(categorySearch.toLowerCase()));
+      }
+    }
+
+    // filter
+    if (isRootCategory !== "all") {
+      if (isRootCategory === "true") {
+        arr = arr.filter((category) => category.parentId === null);
+      } else {
+        arr = arr.filter((category) => category.parentId !== null);
+      }
+    }
+
+    // sort
+    if (sortBy?.field === "createdAt") {
+      arr.sort((a, b) => {
+        if (sortBy.direction === "asc") {
+          return a.createdAt > b.createdAt ? 1 : -1;
+        }
+        return a.createdAt < b.createdAt ? 1 : -1;
+      });
+    } else if (sortBy?.field === "name") {
+      arr.sort((a, b) => {
+        if (sortBy.direction === "asc") {
+          return a.name > b.name ? 1 : -1;
+        }
+        return a.name < b.name ? 1 : -1;
+      });
+    }
+
+    // pagination
+    const count = arr.length;
+
+    const offset = page > 1 ? (page - 1) * limit : 0;
+    const totalPages = Math.ceil(count / limit);
+    let categories = arr.slice(offset, offset + limit);
+
+    return {
+      categories, pagination: {
+        totalCategories: count,
+        totalPages
+      }
+    }
+  }
+
   static async getOne(categoryId) {
     return await prisma.category.findUnique({
       where: { id: categoryId },
@@ -62,12 +155,7 @@ class CategoryService {
         id: categoryId,
       },
       include: {
-        children: {
-          include: {
-            children: true,
-            thumbnailImage: true,
-          },
-        }
+        parent: true,
       }
     });
     while (result.parentId) {
@@ -76,13 +164,7 @@ class CategoryService {
           id: result.parentId,
         },
         include: {
-          children: {
-            include: {
-              children: true,
-              thumbnailImage: true,
-            },
-          },
-          thumbnailImage: true,
+          parent: true,
         }
       });
     }

@@ -10,8 +10,20 @@ class CategoryController {
   }
 
   static async getAll(req, res) {
-    new OKResponse({
+    new CreatedResponse({
       metadata: await CategoryService.getAll(),
+    }).send(res);
+  }
+
+  static async getAllForAdmin(req, res) {
+    new CreatedResponse({
+      metadata: await CategoryService.getAllForAdmin({
+        categorySearch: req.query.categorySearch,
+        isRootCategory: req.query.isRootCategory,
+        limit: +req.query.limit,
+        page: +req.query.page || 1,
+        sortBy: req.query.sortBy,
+      }),
     }).send(res);
   }
 

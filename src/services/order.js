@@ -4,6 +4,7 @@ const { PAYMENT_STATUS_ID_MAPPING } = require("../constant/paymentStatus");
 const { PAYMENT_METHOD_ID_MAPPING } = require("../constant/paymentMethod");
 const CategoryService = require("./category");
 const { BadRequest } = require("../response/error");
+const { eachDayOfInterval, subDays } = require("date-fns");
 
 const commonIncludeOptionsInOrder = {
   buyer: true,
@@ -41,6 +42,40 @@ const commonIncludeOptionsInOrder = {
     include: true,
     orderBy: {
       beginAt: "desc",
+    },
+  },
+}
+
+const reportIncludeOptionsInOrder = {
+  orderDetail: {
+    include: {
+      variant: {
+        include: {
+          product: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              categories: {
+                select: {
+                  category: {
+                    select: {
+                      id: true,
+                      name: true,
+                    },
+                  },
+                }
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  payment: {
+    include: {
+      paymentMethod: true,
+      paymentStatus: true,
     },
   },
 }
@@ -313,22 +348,191 @@ class OrderService {
     };
   }
 
-  static async getAllForReport() {
-    const orders = await prisma.order.findMany({
-      select: {
-        createdAt: true,
-        finalPrice: true,
-        OrderDetail: {
-          select: {
-            quantity: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: "asc",
-      },
+  static async getAllForReport({ beginDate, endDate }) {
+
+    let begin = new Date(beginDate);
+    begin = new Date(begin.setDate(begin.getDate() + 1));
+
+    let end = new Date(endDate);
+    end = new Date(end.setDate(end.getDate() + 1));
+
+    const allDates = eachDayOfInterval({
+      start: beginDate ? begin : subDays(new Date(), 6),
+      end: endDate ? end : new Date(),
     });
-    return orders;
+
+    let query = {
+      include: reportIncludeOptionsInOrder,
+    };
+
+    if (beginDate && endDate) {
+      // end date is the next day of the input
+
+      if (!query.where) Object.assign(query, { where: {} });
+      query.where.createdAt = {
+        gte: new Date(beginDate),
+        lt: new Date(endDate + "T23:59:59.000Z"),
+      };
+    }
+
+    let orders = await prisma.order.findMany({
+      ...query
+    });
+
+    // get order for each date
+    const ordersByDate = [];
+    const salesByDate = [];
+    const productsSoldByDate = [];
+
+    allDates.forEach((date) => {
+      // ORDERS
+      const order = orders.filter((order) => {
+        const createdAt = new Date(order.createdAt);
+        return createdAt.toISOString().split("T")[0] === date.toISOString().split("T")[0];
+      });
+
+      const paymentSuccess = order.filter((order) => order.payment.paymentStatusId === PAYMENT_STATUS_ID_MAPPING.SUCCESS).length;
+      const unpaid = order.filter((order) => order.payment.paymentStatusId !== PAYMENT_STATUS_ID_MAPPING.SUCCESS).length;
+
+      ordersByDate.push({
+        date,
+        // totalOrders: order.length,
+        totalAlreadyPaid: paymentSuccess,
+        totalUnpaid: unpaid,
+      });
+
+      // SALES
+      const totalSales = order.reduce((prev, current) => {
+        prev += current.finalPrice;
+        return prev;
+      }
+        , 0);
+
+      const paidSales = order.filter((order) => order.payment.paymentStatusId === PAYMENT_STATUS_ID_MAPPING.SUCCESS).reduce((prev, current) => {
+        prev += current.finalPrice;
+        return prev;
+      }, 0);
+
+      salesByDate.push({
+        date,
+        totalSales,
+        paidSales,
+      });
+
+      // PRODUCTS SOLD
+      const totalProducts = order.reduce((prev, current) => {
+        current.orderDetail.forEach((item) => {
+          prev += item.quantity;
+        });
+        return prev;
+      }
+        , 0);
+
+      productsSoldByDate.push({
+        date,
+        totalProducts,
+      });
+
+    });
+
+    // get all product sold in this time
+    const productSoldQuantity = [];
+    orders.forEach((order) => {
+      order.orderDetail.forEach((item) => {
+        const foundProductIndex = productSoldQuantity.findIndex(
+          (product) => product.productId === item.variant.productId
+        );
+
+        if (foundProductIndex < 0) {
+          productSoldQuantity.push({
+            productName: item.variant.product.name,
+            productId: item.variant.productId,
+            quantity: item.quantity,
+            categories: item.variant.product.categories,
+          });
+        } else {
+          productSoldQuantity[foundProductIndex].quantity += item.quantity;
+        }
+      });
+    });
+
+    // get all parent category of all product sold in this time base on product sold quantity array
+    const parentCategoryQuantity = [];
+    productSoldQuantity.forEach((product) => {
+      const parentCategories = product.categories.map(
+        (category) => category.category
+      );
+
+      parentCategories.forEach((parentCategory) => {
+        const foundParentCategoryIndex = parentCategoryQuantity.findIndex(
+          (item) => parentCategory.id === item.categoryId
+        );
+
+        if (foundParentCategoryIndex < 0) {
+          parentCategoryQuantity.push({
+            categoryName: parentCategory.name,
+            categoryId: parentCategory.id,
+            quantity: product.quantity,
+          });
+        } else {
+          parentCategoryQuantity[foundParentCategoryIndex].quantity += product.quantity;
+        }
+      });
+    });
+
+    // get quantity of each payment method of all orders in this time
+    const paymentMethodQuantity = [];
+    orders.forEach((order) => {
+      const foundPaymentMethodIndex = paymentMethodQuantity.findIndex(
+        (paymentMethod) => paymentMethod.paymentMethodId === order.payment.paymentMethodId
+      );
+
+      if (foundPaymentMethodIndex < 0) {
+        paymentMethodQuantity.push({
+          paymentMethodName: order.payment.paymentMethod.name,
+          paymentMethodId: order.payment.paymentMethodId,
+          quantity: 1,
+        });
+      } else {
+        paymentMethodQuantity[foundPaymentMethodIndex].quantity += 1;
+      }
+    });
+
+    console.log("paymentMethodQuantity", paymentMethodQuantity);
+    console.log("parentCategoryQuantity", parentCategoryQuantity);
+
+    // get all users
+    const users = await prisma.account.findMany();
+
+
+    // get all user created on each day
+    const usersByDate = allDates.map((date) => {
+      const user = users.filter((user) => {
+        const createdAt = new Date(user.createdAt);
+        return createdAt.toISOString().split("T")[0] === date.toISOString().split("T")[0];
+      });
+
+      // get total users until this day
+      const totalUsers = users.filter((user) => {
+        const createdAt = new Date(user.createdAt);
+        return createdAt <= date;
+      });
+
+      return {
+        date,
+        newUsers: user.length,
+        totalUsers: totalUsers.length,
+      };
+    });
+
+    return {
+      ordersByDate,
+      salesByDate,
+      productsSoldByDate,
+      parentCategoryQuantity,
+      paymentMethodQuantity,
+      usersByDate,
+    };
   }
 
   static async getMenForReport() {
@@ -514,6 +718,18 @@ class OrderService {
         beginAt: new Date(),
       },
     });
+
+    // if update to delivered, update payment status to success
+    if (+fromStatus === ORDER_STATUS_ID_MAPPING.DELIVERING && +toStatus === ORDER_STATUS_ID_MAPPING.DELIVERED) {
+      await prisma.payment.update({
+        where: {
+          orderId,
+        },
+        data: {
+          paymentStatusId: PAYMENT_STATUS_ID_MAPPING.SUCCESS,
+        },
+      });
+    }
 
     return await prisma.order.update({
       where: { id: orderId },

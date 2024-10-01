@@ -39,7 +39,10 @@ class OrderController {
 
   static async getAllForReport(req, res) {
     new OKResponse({
-      metadata: await OrderService.getAllForReport(),
+      metadata: await OrderService.getAllForReport({
+        beginDate: req.query.beginDate,
+        endDate: req.query.endDate,
+      }),
     }).send(res);
   }
 
