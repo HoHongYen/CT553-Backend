@@ -23,6 +23,14 @@ router.get(
     asyncHandler(ReviewController.getTopReviews)
 );
 
+// get all reviews of a product
+router.get(
+    "/:productId",
+    query("productId").custom(existProduct),
+    validate,
+    asyncHandler(ReviewController.getAllReviewsOfProduct)
+);
+
 router.use(authentication);
 
 // get all reviews of an account by admin
@@ -37,14 +45,6 @@ router.get(
     "/",
     validate,
     asyncHandler(ReviewController.getAllReviews)
-);
-
-// get all reviews of a product
-router.get(
-    "/:productId",
-    query("productId").custom(existProduct),
-    validate,
-    asyncHandler(ReviewController.getAllReviewsOfProduct)
 );
 
 router.post(
