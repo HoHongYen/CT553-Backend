@@ -1,4 +1,5 @@
 const prisma = require("../config/prismaClient");
+const { PRODUCT_TRENDING } = require("../constant/productType");
 const { CreatedResponse, OKResponse } = require("../response/success");
 const ProductService = require("../services/product");
 const ProductDiscountService = require("../services/productDiscount");
@@ -16,7 +17,6 @@ class ProductController {
         type: req.query.type,
         categoryIds: req.query.categoryIds,
         limit: +req.query.limit,
-        search: req.query.search,
         productIds: req.query.productIds,
         page: +req.query.page || 1,
         filter: req.query.filter,

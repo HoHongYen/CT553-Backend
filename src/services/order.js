@@ -4,7 +4,7 @@ const { PAYMENT_STATUS_ID_MAPPING } = require("../constant/paymentStatus");
 const { PAYMENT_METHOD_ID_MAPPING } = require("../constant/paymentMethod");
 const CategoryService = require("./category");
 const { BadRequest } = require("../response/error");
-const { eachDayOfInterval, subDays } = require("date-fns");
+const { eachDayOfInterval, subDays, eachMonthOfInterval } = require("date-fns");
 
 const commonIncludeOptionsInOrder = {
   buyer: true,
@@ -350,16 +350,20 @@ class OrderService {
 
   static async getAllForReport({ beginDate, endDate }) {
 
+    // check if this is a year picker, means begin date is the first day of the year and end date is the last day of the year
+    const isYearPicker = beginDate && endDate && beginDate.split("-")[1] === "01" && beginDate.split("-")[2] === "01" && endDate.split("-")[1] === "12" && endDate.split("-")[2] === "31";
+
     let begin = new Date(beginDate);
-    begin = new Date(begin.setDate(begin.getDate() + 1));
-
     let end = new Date(endDate);
-    end = new Date(end.setDate(end.getDate() + 1));
 
-    const allDates = eachDayOfInterval({
-      start: beginDate ? begin : subDays(new Date(), 6),
-      end: endDate ? end : new Date(),
-    });
+    if (!isYearPicker) {
+      begin = new Date(begin.setDate(begin.getDate() + 1));
+      end = new Date(end.setDate(end.getDate() + 1));
+    } else {
+      // set begin date to the first day of the year and end date to the last day of the year
+      begin = new Date(begin.setMonth(1));
+      end = new Date(end.setMonth(12));
+    }
 
     let query = {
       include: reportIncludeOptionsInOrder,
@@ -379,16 +383,34 @@ class OrderService {
       ...query
     });
 
+    console.log("isYearPicker", isYearPicker);
+    let allDates = [];
+    if (!isYearPicker) {
+      allDates = eachDayOfInterval({
+        start: beginDate ? begin : subDays(new Date(), 6),
+        end: endDate ? end : new Date(),
+      });
+    } else {
+      // get all months in this year, month format is "MM-YYYY"
+      allDates = eachMonthOfInterval({
+        start: beginDate ? begin : new Date(new Date().getFullYear(), 1),
+        end: endDate ? end : new Date(),
+      });
+    }
+
+    console.log(allDates);
+
     // get order for each date
     const ordersByDate = [];
     const salesByDate = [];
     const productsSoldByDate = [];
 
     allDates.forEach((date) => {
-      // ORDERS
+      // ORDERS BY DATE
       const order = orders.filter((order) => {
         const createdAt = new Date(order.createdAt);
-        return createdAt.toISOString().split("T")[0] === date.toISOString().split("T")[0];
+        if (!isYearPicker) return createdAt.toISOString().split("T")[0] === date.toISOString().split("T")[0];
+        return createdAt.toISOString().split("T")[0].split("-")[1] === date.toISOString().split("T")[0].split("-")[1];
       });
 
       const paymentSuccess = order.filter((order) => order.payment.paymentStatusId === PAYMENT_STATUS_ID_MAPPING.SUCCESS).length;
@@ -396,12 +418,11 @@ class OrderService {
 
       ordersByDate.push({
         date,
-        // totalOrders: order.length,
         totalAlreadyPaid: paymentSuccess,
         totalUnpaid: unpaid,
       });
 
-      // SALES
+      // SALES BY DATE
       const totalSales = order.reduce((prev, current) => {
         prev += current.finalPrice;
         return prev;
@@ -419,7 +440,7 @@ class OrderService {
         paidSales,
       });
 
-      // PRODUCTS SOLD
+      // PRODUCTS SOLD BY DATE
       const totalProducts = order.reduce((prev, current) => {
         current.orderDetail.forEach((item) => {
           prev += item.quantity;
@@ -498,18 +519,15 @@ class OrderService {
       }
     });
 
-    console.log("paymentMethodQuantity", paymentMethodQuantity);
-    console.log("parentCategoryQuantity", parentCategoryQuantity);
-
     // get all users
     const users = await prisma.account.findMany();
-
 
     // get all user created on each day
     const usersByDate = allDates.map((date) => {
       const user = users.filter((user) => {
         const createdAt = new Date(user.createdAt);
-        return createdAt.toISOString().split("T")[0] === date.toISOString().split("T")[0];
+        if (!isYearPicker) return createdAt.toISOString().split("T")[0] === date.toISOString().split("T")[0];
+        return createdAt.toISOString().split("T")[0].split("-")[1] === date.toISOString().split("T")[0].split("-")[1];
       });
 
       // get total users until this day
@@ -524,6 +542,8 @@ class OrderService {
         totalUsers: totalUsers.length,
       };
     });
+
+    console.log("salesByDate", salesByDate);
 
     return {
       ordersByDate,
