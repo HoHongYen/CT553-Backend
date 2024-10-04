@@ -15,6 +15,7 @@ router.use("/shippings", require("./shipping"));
 router.use("/payments", require("./payment"));
 router.use("/orders", require("./order"));
 router.use("/coupons", require("./coupon"));
+router.use("/webhooks", require("./webhook"));
 
 router.use("/uploadTempData", require("./uploadTempData"));
 
