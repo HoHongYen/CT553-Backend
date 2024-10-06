@@ -1,3 +1,5 @@
+const { default: slugify } = require("slugify");
+
 function sortObject(obj) {
   let sorted = {};
   let str = [];
@@ -84,10 +86,18 @@ const getUploadedImageIds = async (imageUrls) => {
   return uploadedImageIds;
 }
 
+const formatCurrency = (value) =>
+  new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+
+const formatSlugify = (value) =>
+  slugify(value, { lower: true, locale: 'vi' });
+
 module.exports = {
   sortObject,
   getGenderFromQuery,
   changeImageUrlToFile,
   getUploadedImageId,
   getUploadedImageIds,
+  formatCurrency,
+  formatSlugify,
 };

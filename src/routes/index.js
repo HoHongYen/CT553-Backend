@@ -16,6 +16,12 @@ router.use("/payments", require("./payment"));
 router.use("/orders", require("./order"));
 router.use("/coupons", require("./coupon"));
 router.use("/webhooks", require("./webhook"));
+router.use("/paymentPolicies", require("./paymentPolicy"));
+router.use("/deliveryPolicies", require("./deliveryPolicy"));
+router.use("/checkProductPolicies", require("./checkProductPolicy"));
+router.use("/returnPolicies", require("./returnPolicy"));
+router.use("/warrantyPolicies", require("./warrantyPolicy"));
+router.use("/securityPolicies", require("./securityPolicy"));
 
 router.use("/uploadTempData", require("./uploadTempData"));
 
