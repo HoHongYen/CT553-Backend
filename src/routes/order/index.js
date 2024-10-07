@@ -14,16 +14,7 @@ const router = require("express").Router();
 
 router.get("/all", asyncHandler(OrderController.getAll));
 router.get("/allForReport", asyncHandler(OrderController.getAllForReport));
-router.get("/menForReport", asyncHandler(OrderController.getMenForReport));
-router.get("/womenForReport", asyncHandler(OrderController.getWomenForReport));
-router.get("/childrenForReport", asyncHandler(OrderController.getChildrenForReport));
 router.get("/status-all", asyncHandler(OrderController.getAllOrderStatus));
-
-// router.get(
-//   "/:orderId",
-//   validate,
-//   asyncHandler(OrderController.getById)
-// ); // VALIDATE ADMIN
 
 router.use(authentication);
 

@@ -38,7 +38,6 @@ class ProductService {
     console.log("productData", productData);
 
     // get category
-
     const categories = await prisma.category.findMany({
       where: {
         slug: {
@@ -57,12 +56,22 @@ class ProductService {
     console.log("thumbnailImageId", thumbnailImageId);
 
     // upload view image
-    const viewImageId = await getUploadedImageId(productData.viewImage);
-    console.log("viewImageId", viewImageId);
+    let viewImageId;
+    if (productData.viewImage) {
+      viewImageId = await getUploadedImageId(productData.viewImage);
+      console.log("viewImageId", viewImageId);
+    } else {
+      console.log("No view image " + productData.name);
+    }
 
     // upload images
-    const uploadedImageIds = await getUploadedImageIds(productData.images);
-    console.log("uploadedImageIds", uploadedImageIds);
+    let uploadedImageIds = [];
+    if (productData.images.length !== 0) {
+      uploadedImageIds = await getUploadedImageIds(productData.images);
+      console.log("uploadedImageIds", uploadedImageIds);
+    } else {
+      console.log("No images " + productData.name);
+    }
 
     // create product
     const newProduct = await prisma.$transaction(async (tx) => {
@@ -119,9 +128,9 @@ class ProductService {
     );
   }
 
-  static async crawlCategory({ url }) {
+  static async crawlCategory({ categorySlugs, url }) {
     const links = await getAllProductLinks(url);
-    return await ProductService.crawlMany({ categorySlugs: ["tranh-hoa-sen"], urls: links });
+    return await ProductService.crawlMany({ categorySlugs, urls: links });
   }
 
   static async create({ uploadedImageIds, categoryIds, variants, discounts, ...data }) {
@@ -228,8 +237,17 @@ class ProductService {
       return { id: image.image.id, path: image.image.path };
     });
     const thumbnailImage = { id: product.thumbnailImage.id, path: product.thumbnailImage.path };
-    const viewImage = { id: product.viewImage.id, path: product.viewImage.path };
-    const allImages = [thumbnailImage, viewImage, ...images];
+    let viewImage = null;
+    if (product.viewImage) {
+      viewImage = { id: product.viewImage.id, path: product.viewImage.path };
+    }
+    // const viewImage = { id: product.viewImage.id, path: product.viewImage.path };
+    let allImages = [];
+    if (viewImage) {
+      allImages = [thumbnailImage, viewImage, ...images];
+    } else {
+      allImages = [thumbnailImage, ...images];
+    }
 
     Promise.all(
       allImages.map(async (image) => {
@@ -241,6 +259,7 @@ class ProductService {
   }
 
   static async getAll({
+    productSearch,
     type = PRODUCT_ALL,
     categoryIds = [],
     productIds = [],
@@ -265,6 +284,23 @@ class ProductService {
       filterMinPrice,
       sortBy,
     });
+
+    // search
+    if (productSearch) {
+      // if productSearch is a number, search by id
+      if (!query.where) Object.assign(query, { where: {} });
+      if (!isNaN(productSearch)) {
+        query.where = { ...query.where, id: +productSearch };
+      } else {
+        query.where = {
+          ...query.where,
+          name: {
+            contains: productSearch,
+            mode: "insensitive",
+          },
+        }
+      }
+    }
 
     const count = await prisma.product.count({
       where: query.where,

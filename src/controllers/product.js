@@ -14,6 +14,7 @@ class ProductController {
   static async getAll(req, res) {
     new OKResponse({
       metadata: await ProductService.getAll({
+        productSearch: req.query.productSearch, // of admin
         type: req.query.type,
         categoryIds: req.query.categoryIds,
         limit: +req.query.limit,
@@ -129,6 +130,12 @@ class ProductController {
   static async createImageEmbeddingsForAllProducts(req, res) {
     new OKResponse({
       metadata: await ProductService.createImageEmbeddingsForAllProducts(),
+    }).send(res);
+  }
+
+  static async createEmbeddingsForProduct(req, res) {
+    new OKResponse({
+      metadata: await ProductService.createEmbeddingsForProduct(+req.params.id),
     }).send(res);
   }
 

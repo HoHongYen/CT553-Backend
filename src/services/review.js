@@ -127,8 +127,6 @@ class ReviewService {
       }
     }
 
-    console.log("visible", visible);
-
     // filter
     if (visible !== "all") {
       if (!query.where) Object.assign(query, { where: {} });

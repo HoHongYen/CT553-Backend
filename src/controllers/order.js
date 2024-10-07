@@ -46,23 +46,6 @@ class OrderController {
     }).send(res);
   }
 
-  static async getMenForReport(req, res) {
-    new OKResponse({
-      metadata: await OrderService.getMenForReport(),
-    }).send(res);
-  }
-
-  static async getWomenForReport(req, res) {
-    new OKResponse({
-      metadata: await OrderService.getWomenForReport(),
-    }).send(res);
-  }
-  static async getChildrenForReport(req, res) {
-    new OKResponse({
-      metadata: await OrderService.getChildrenForReport(),
-    }).send(res);
-  }
-
   static async cancel(req, res) {
     new OKResponse({
       metadata: await OrderService.cancel(+req.params.orderId),

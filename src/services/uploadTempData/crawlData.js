@@ -29,11 +29,23 @@ const getProduct = async (url) => {
 	pictureData.name = $($('.product-title.product_title.entry-title')).text().trim();
 
 	// get price
-	const dataProductVariations = $('div.product-container > div.product-main > div > div.product-info.summary.col-fit.col.entry-summary.product-summary > form').attr('data-product_variations');
-	const variations = JSON.parse(dataProductVariations);
-	const prices = variations.map(variation => variation.display_regular_price);
+	let prices = [];
+	let dataProductVariations = $('div.product-container > div.product-main > div > div.product-info.summary.col-fit.col.entry-summary.product-summary > form').attr('data-product_variations');
+	if (!dataProductVariations) {
+		let price = $("div.product-main > div > div.product-info.summary.col-fit.col.entry-summary.product-summary > div.price-wrapper > p > span > bdi").text();
+		if (!price) {
+			// has discount
+			price = $("div.product-main > div > div.product-info.summary.col-fit.col.entry-summary.product-summary > div.price-wrapper > p > del > span > bdi").text();
+		}
+		price = price.replace(/\D/g, '');
+		prices = [+price];
+	} else {
+		const variations = JSON.parse(dataProductVariations);
+		prices = variations.map(variation => variation.display_regular_price);
+	}
 
 	// get size
+	let sizes = [];
 	tempArray = [];
 	$('#pa_chon-kich-thuoc > option').each(async (i, element) => {
 		let size = $(element).text()
@@ -41,9 +53,18 @@ const getProduct = async (url) => {
 			tempArray.push(size);
 		}
 	})
-	const sizes = tempArray.filter(
-		(value, index, array) => array.indexOf(value) === index
-	);
+	if (tempArray.length == 0) {
+		$('#accordion-summary > div > p').each(async (i, element) => {
+			let size = $(element).text()
+			if (size.includes("Kích thước:")) {
+				sizes.push(size.split(":")[1].trim());
+			}
+		})
+	} else {
+		sizes = tempArray.filter(
+			(value, index, array) => array.indexOf(value) === index
+		);
+	}
 
 	// merge size and price into variants
 	const variants = [];
@@ -72,10 +93,7 @@ const getProduct = async (url) => {
 	str = $($('#accordion-summary > div > p:nth-last-child(2)')).text();
 	pictureData.overview = str.substring(2, str.length);
 
-	// get thumbnail image
-	// pictureData.thumbnailImage = $($('div.product-gallery.large-7.col > div > div.col.large-11.pb-0 > div.woocommerce-product-gallery.woocommerce-product-gallery--with-images.woocommerce-product-gallery--columns-4.images.relative.has-hover > div.woocommerce-product-gallery__wrapper.product-gallery-slider.slider.slider-nav-small.mb-0.is-draggable.flickity-enabled > div > div > div.woocommerce-product-gallery__image.slide.first.is-selected > a')).attr('href');
-
-	// let category = "";
+	// get thumbnail image and images
 	let scriptImages = [];
 	await fetch(url)
 		.then(res => {
@@ -92,8 +110,6 @@ const getProduct = async (url) => {
 			);
 			const meta = JSON.parse($(el).text()); // 
 			const metadata = meta["@graph"];
-			// category = metadata[metadata.length - 1].category;
-			// console.log("category", category);
 			scriptImages = metadata[metadata.length - 1].image.map(e => e.url);
 			pictureData.thumbnailImage = scriptImages[0];
 			pictureData.images = scriptImages.slice(1);
@@ -101,19 +117,11 @@ const getProduct = async (url) => {
 		.catch(err => console.error(err));
 
 	// get view image
-	// pictureData.viewImage = $($('#popupDrag-bg > img')).attr('src');
 	const imgTagString = $('#popupDrag-bg > noscript').text();
 	const imgTag = cheerio.load(imgTagString);
 	pictureData.viewImage = imgTag('img').attr('src');
 
-	// get images
-	// tempArray = [];
-	// $('.woocommerce-product-gallery__image').each((i, element) => {
-	// 	let image = $(element).attr('data-thumb');
-	// 	tempArray.push(image);
-	// })
-	// pictureData.images = tempArray;
-
+	// ọther information
 	pictureData.overview = "<p>" + pictureData.overview + "</p>";
 	pictureData.material = "<p>Gương pha lê: Được in bằng công nghệ UV trên bề mặt MiCa trong suốt và tráng gương pha lê ngoài cùng, tạo độ bóng sáng, lấp lánh cho mọi bức tranh. Mặt sau tranh được ép &nbsp;1 lớp fomex giúp tranh cứng cáp và hút ẩm tốt nhất. Đây là loại tranh sang trọng bậc nhất thị trường hiện nay.<br>Cả hai chất liệu canvas và gương pha lê đều có khả năng chống thấm nước, chống phai màu. Vì thế, tranh Aloha đảm bảo bền đẹp theo thời gian.</p>";
 	pictureData.specification = "<p>Quy cách chất liệu tráng gương cao cấp:</p><ul><li>Công nghệ in Uv in trực tiếp lên mica, mực Uv Mỹ.</li><li>Bề mặt tranh được phủ thêm 1 lớp nhựa epoxy bóng siêu nét.</li><li>Mặt sau được đỡ thêm tấm fomex dày 8mm.</li><li>Đóng khung tranh composite: trắng, đen, vàng.</li></ul>";
@@ -135,7 +143,7 @@ const getAllProductLinks = async (url) => {
 		let link = $(element).attr('href');
 		links.push(link);
 	})
-	links = links.slice(0, 5);
+	links = links.slice(5, 10);
 	console.log("links", links);
 	return links;
 }

@@ -151,8 +151,8 @@ model Product {
   thumbnailImageId Int           @unique @map("thumbnail_image_id")
   thumbnailImage   UploadedImage @relation("ThumbnailImage", fields: [thumbnailImageId], references: [id], onDelete: Cascade)
 
-  viewImageId Int           @unique @map("view_image_id")
-  viewImage   UploadedImage @relation("ViewImage", fields: [viewImageId], references: [id], onDelete: Cascade)
+  viewImageId Int?           @unique @map("view_image_id")
+  viewImage   UploadedImage? @relation("ViewImage", fields: [viewImageId], references: [id], onDelete: Cascade)
 
   productDiscount        ProductDiscount[]
   productImageEmbeddings ProductImageEmbeddings[]
@@ -448,3 +448,15 @@ model SecurityPolicy {
 
   @@map("security_policies")
 }
+
+// model HomeBanner {
+//   id        Int      @id @default(autoincrement()) @map("home_banner_id")
+//   imageId   Int      @map("image_id")
+//   visible   Boolean  @default(true)
+//   createdAt DateTime @default(now()) @map("created_at")
+//   updatedAt DateTime @updatedAt @map("updated_at")
+
+//   image UploadedImage[] @relation(fields: [imageId], references: [id], onDelete: Cascade)
+
+//   @@map("home_banners")
+// }

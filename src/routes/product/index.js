@@ -45,6 +45,7 @@ router.get(
 router.get("/getAllTextEmbeddings", asyncHandler(ProductController.getAllTextEmbeddings));
 router.get("/createTextEmbeddingsForAllProducts", asyncHandler(ProductController.createTextEmbeddingsForAllProducts));
 
+router.get("/createEmbeddingsForProduct/:id", asyncHandler(ProductController.createEmbeddingsForProduct));
 router.get("/getAllImageEmbeddings", asyncHandler(ProductController.getAllImageEmbeddings));
 router.get("/createImageEmbeddingsForAllProducts", asyncHandler(ProductController.createImageEmbeddingsForAllProducts));
 

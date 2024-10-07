@@ -36,6 +36,7 @@ async function getGenderFromQuery(query) {
 }
 
 const getUrlExtension = (url) => {
+  console.log("url", url);
   return url.split(/[#?]/)[0].split(".").pop().trim();
 };
 
