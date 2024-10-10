@@ -22,6 +22,7 @@ router.use("/checkProductPolicies", require("./checkProductPolicy"));
 router.use("/returnPolicies", require("./returnPolicy"));
 router.use("/warrantyPolicies", require("./warrantyPolicy"));
 router.use("/securityPolicies", require("./securityPolicy"));
+router.use("/shopInfo", require("./shopInfo"));
 
 router.use("/uploadTempData", require("./uploadTempData"));
 

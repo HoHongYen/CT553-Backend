@@ -28,6 +28,7 @@ model UploadedImage {
   updatedAt              DateTime                @updatedAt @map("updated_at")
   ProductImageEmbeddings ProductImageEmbeddings?
   reviewImage            ReviewImage[]
+  ShopInfo               ShopInfo[]
 
   @@map("uploaded_images")
 }
@@ -460,3 +461,31 @@ model SecurityPolicy {
 
 //   @@map("home_banners")
 // }
+
+model ShopInfo {
+  id            Int     @id @default(autoincrement()) @map("shop_info_id")
+  name          String
+  fullName      String  @map("full_name")
+  logoId        Int     @map("logo_id")
+  phone         String
+  email         String
+  businessCode  String  @map("business_code")
+  workingTime   String  @map("working_time")
+  isMaintaining Boolean @default(false) @map("is_maintaining")
+
+  // address
+  provinceName  String @map("province_name")
+  provinceId    Int    @map("province_id")
+  districtName  String @map("district_name")
+  districtId    Int    @map("district_id")
+  wardName      String @map("ward_name")
+  wardCode      String @map("ward_code")
+  detailAddress String @map("detail_address")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  logo UploadedImage @relation(fields: [logoId], references: [id], onDelete: Cascade)
+
+  @@map("shop_infos")
+}
