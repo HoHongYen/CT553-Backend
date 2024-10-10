@@ -44,7 +44,7 @@ class ReturnPolicyService {
         { content, visible }
     ) {
         if (visible) {
-            await prisma.deliveryPolicy.updateMany({
+            await prisma.returnPolicy.updateMany({
                 where: { visible: true },
                 data: { visible: false },
             });

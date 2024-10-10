@@ -44,7 +44,7 @@ class PaymentPolicyService {
         { content, visible }
     ) {
         if (visible) {
-            await prisma.deliveryPolicy.updateMany({
+            await prisma.paymentPolicy.updateMany({
                 where: { visible: true },
                 data: { visible: false },
             });

@@ -45,7 +45,7 @@ class CheckProductPolicyService {
     ) {
 
         if (visible) {
-            await prisma.deliveryPolicy.updateMany({
+            await prisma.checkProductPolicy.updateMany({
                 where: { visible: true },
                 data: { visible: false },
             });

@@ -44,7 +44,7 @@ class SecurityPolicyService {
         { content, visible }
     ) {
         if (visible) {
-            await prisma.deliveryPolicy.updateMany({
+            await prisma.securityPolicy.updateMany({
                 where: { visible: true },
                 data: { visible: false },
             });
