@@ -14,12 +14,12 @@ class ShopInfoService {
     }
 
     static async create({ name, fullName, email, phone, businessCode, workingTime, isMaintaining,
-        provinceId, districtId, wardCode, provinceName, districtName, wardName, detailAddress = "", logoId }) {
+        provinceId, districtId, wardCode, provinceName, districtName, wardName, detailAddress = "", logoId, maintainingMessage = "" }) {
 
         const newShopInfo = await prisma.shopInfo.create({
             data: {
                 name, fullName, email, phone, businessCode, workingTime, isMaintaining, provinceId: +provinceId,
-                districtId: +districtId, wardCode, provinceName, districtName, wardName, detailAddress, logoId: +logoId
+                districtId: +districtId, wardCode, provinceName, districtName, wardName, detailAddress, logoId: +logoId, maintainingMessage
             },
         });
         return newShopInfo;
@@ -28,7 +28,7 @@ class ShopInfoService {
     static async update(
         shopInfoId,
         { name, fullName, email, phone, businessCode, workingTime, isMaintaining,
-            provinceId, districtId, wardCode, provinceName, districtName, wardName, detailAddress = "", logoId }
+            provinceId, districtId, wardCode, provinceName, districtName, wardName, detailAddress = "", logoId, maintainingMessage = "" }
     ) {
         const updatedShopInfo = await prisma.shopInfo.update({
             where: {
@@ -36,7 +36,7 @@ class ShopInfoService {
             },
             data: {
                 name, fullName, email, phone, businessCode, workingTime, isMaintaining, provinceId: +provinceId,
-                districtId: +districtId, wardCode, provinceName, districtName, wardName, detailAddress, logoId: +logoId
+                districtId: +districtId, wardCode, provinceName, districtName, wardName, detailAddress, logoId: +logoId, maintainingMessage
             }
         });
         return updatedShopInfo;

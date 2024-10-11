@@ -472,6 +472,7 @@ model ShopInfo {
   businessCode  String  @map("business_code")
   workingTime   String  @map("working_time")
   isMaintaining Boolean @default(false) @map("is_maintaining")
+  maintainingMessage String? @map("maintaining_message")
 
   // address
   provinceName  String @map("province_name")
