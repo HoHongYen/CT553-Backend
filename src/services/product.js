@@ -19,6 +19,7 @@ const { getUploadedImageId, getUploadedImageIds } = require("../utils");
 const { Prisma } = require("@prisma/client");
 const { getQueryObjectBasedOnFilters, commonIncludeOptionsInProduct, commonIncludeOptionsInProductAdmin } = require("../utils/product");
 const { getProduct, getAllProductLinks } = require("./uploadTempData/crawlData");
+const RecommendService = require("./recommend");
 
 class ProductService {
   // crawl
@@ -729,6 +730,21 @@ ORDER BY cosine_similarity DESC LIMIT 5; `;
       include: commonIncludeOptionsInProduct,
     });
 
+    return products;
+  }
+
+  static async getRecommendProductsBasedOnRatings(accountId) {
+    let productIds = await RecommendService.getRecommend(accountId);
+    productIds = productIds.map((item) => item.productId);
+    const products = await prisma.product.findMany({
+      where: {
+        id: {
+          in: productIds,
+        },
+      },
+      include: commonIncludeOptionsInProduct,
+    });
+    console.log("products", products);
     return products;
   }
 

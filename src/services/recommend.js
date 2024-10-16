@@ -147,7 +147,11 @@ class RecommendService {
                     nearest.sort((a, b) => b.sim - a.sim);
                     nearest = nearest.slice(0, k);
 
-                    console.log('nearest productId accountId', productIds[i], accountIds[j], nearest);
+                    // console.log('nearest productId accountId', productIds[i], accountIds[j]);
+                    console.log('nearest ', nearest);   
+                    for (let item of nearest) {
+                        console.log('nearest productId accountId', productIds[i], accountIds[item.index], item.sim);
+                    }
 
                     // calculate rating
                     for (let l = 0; l < nearest.length; l++) {
@@ -210,7 +214,7 @@ class RecommendService {
                     break;
                 }
             }
-            if (!isExist) data.push({ accountId: accountId, productId: productId, rating: rating, count: 1 });
+            if (!isExist) data.push({ accountId, productId, rating, count: 1 });
         }
         console.log('data ', data);
 

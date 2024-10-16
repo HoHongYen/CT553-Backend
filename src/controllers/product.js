@@ -161,11 +161,13 @@ class ProductController {
     const accountId = +req.account.id;
 
     new OKResponse({
-      metadata: await ProductService.getRecommendProductsBasedOnOrders(
+      // metadata: await ProductService.getRecommendProductsBasedOnOrders(
+      metadata: await ProductService.getRecommendProductsBasedOnRatings(
         accountId
       ),
     }).send(res);
   }
+
 
   static async searchByImageUrl(req, res) {
     const imageUrl = req.query.imageUrl;
