@@ -17,7 +17,7 @@ class ReviewService {
     });
 
     if (existingReview) {
-      throw new Error("You have already reviewed this product");
+      throw new Error("You have already reviewed this product for this order");
     }
 
     const newReview = await prisma.$transaction(async (tx) => {
@@ -31,6 +31,33 @@ class ReviewService {
           reviewId: createdReview.id,
         })),
       });
+
+      // create rating for recommend
+      // check if user has rated this product, rating will be updated, count plus 1
+      const existingRatingRecommendation = await tx.ratingRecommendation.findFirst({
+        where: {
+          accountId,
+          productId,
+        }
+      });
+
+      if (existingRatingRecommendation) {
+        const updatedRatingRecommendation = await tx.ratingRecommendation.update({
+          where: {
+            id: existingRatingRecommendation.id
+          },
+          data: {
+            count: existingRatingRecommendation.count + 1,
+            rating: (existingRatingRecommendation.rating * (existingRatingRecommendation.count) + rating) / (existingRatingRecommendation.count + 1)
+          }
+        });
+
+        return createdReview;
+      }
+
+      await tx.ratingRecommendation.create({
+        data: { accountId, productId, rating, count: 1 }
+      })
 
       return createdReview;
     });
