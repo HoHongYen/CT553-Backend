@@ -152,7 +152,7 @@ class WebhookController {
                                     link: `${process.env.FRONTEND_URL}/san-pham/${product.slug}`
                                 },
                                 {
-                                    text: "Thêm vào giỏ hàng",
+                                    text: "Mua ngay",
                                     link: "https://cloud.google.com/dialogflow/docs"
                                 }
                             ]

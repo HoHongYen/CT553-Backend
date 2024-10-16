@@ -23,6 +23,7 @@ router.use("/returnPolicies", require("./returnPolicy"));
 router.use("/warrantyPolicies", require("./warrantyPolicy"));
 router.use("/securityPolicies", require("./securityPolicy"));
 router.use("/shopInfo", require("./shopInfo"));
+router.use("/recommend", require("./recommend"));
 
 router.use("/uploadTempData", require("./uploadTempData"));
 

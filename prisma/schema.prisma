@@ -53,9 +53,10 @@ model Account {
   orders           Order[]
   collectedCoupons CollectedCoupons[]
 
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  review    Review[]
+  createdAt            DateTime               @default(now()) @map("created_at")
+  updatedAt            DateTime               @updatedAt @map("updated_at")
+  review               Review[]
+  ratingRecommendation RatingRecommendation[]
 
   @@map("accounts")
 }
@@ -158,7 +159,8 @@ model Product {
   productDiscount        ProductDiscount[]
   productImageEmbeddings ProductImageEmbeddings[]
 
-  productEmbedding ProductEmbeddings?
+  productEmbedding     ProductEmbeddings?
+  ratingRecommendation RatingRecommendation[]
 
   @@map("products")
 }
@@ -463,15 +465,15 @@ model SecurityPolicy {
 // }
 
 model ShopInfo {
-  id            Int     @id @default(autoincrement()) @map("shop_info_id")
-  name          String
-  fullName      String  @map("full_name")
-  logoId        Int     @map("logo_id")
-  phone         String
-  email         String
-  businessCode  String  @map("business_code")
-  workingTime   String  @map("working_time")
-  isMaintaining Boolean @default(false) @map("is_maintaining")
+  id                 Int     @id @default(autoincrement()) @map("shop_info_id")
+  name               String
+  fullName           String  @map("full_name")
+  logoId             Int     @map("logo_id")
+  phone              String
+  email              String
+  businessCode       String  @map("business_code")
+  workingTime        String  @map("working_time")
+  isMaintaining      Boolean @default(false) @map("is_maintaining")
   maintainingMessage String? @map("maintaining_message")
 
   // address
@@ -489,4 +491,18 @@ model ShopInfo {
   logo UploadedImage @relation(fields: [logoId], references: [id], onDelete: Cascade)
 
   @@map("shop_infos")
+}
+
+model RatingRecommendation {
+  id        Int   @id @default(autoincrement()) @map("rating_recommendation_id")
+  accountId    Int   @map("account_id")
+  productId Int   @map("product_id")
+  rating    Float
+
+  count Int @default(0)
+
+  user    Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("rating_recommendations")
 }

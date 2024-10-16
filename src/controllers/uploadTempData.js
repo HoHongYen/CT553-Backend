@@ -1,6 +1,5 @@
 const { CreatedResponse, OKResponse } = require("../response/success");
 const ProductService = require("../services/product");
-const { tranhPhongKhach } = require("../services/uploadTempData/productsData");
 
 class UploadTempDataController {
     // crawl
