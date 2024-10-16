@@ -813,7 +813,14 @@ class OrderService {
       }
       let productDiscount = 0;
       if (variant.product.productDiscount.length > 0) {
-        const discount = variant.product.productDiscount[0];
+        // const discount = variant.product.productDiscount[0];
+        let discount;
+        for (let i = 1; i < variant.product.productDiscount.length; i++) {
+          discount = variant.product.productDiscount[i];
+          if (discount.startDate < new Date() && discount.endDate > new Date()) {
+            break;
+          }
+        }
         if (discount.endDate > new Date()) {
           if (discount.discountType === "percentage") {
             productDiscount =
@@ -823,12 +830,16 @@ class OrderService {
           }
         }
       }
+      console.log("productDiscount", productDiscount);
       return (
         prev +
         +quantityInOrder[variant.id] *
         (+variant.price - productDiscount)
       );
     }, 0);
+
+    console.log("reCalculateTotalPrice", reCalculateTotalPrice);
+    console.log("totalPrice", totalPrice);
 
     if (reCalculateTotalPrice != totalPrice) {
       throw new BadRequest("Total price is invalid");
