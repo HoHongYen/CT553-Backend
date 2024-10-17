@@ -3,6 +3,22 @@ const UploadService = require("./upload");
 const { commonIncludeOptionsInReview } = require("../utils/commonInclude");
 
 class ReviewService {
+
+  static async checkIfUserHasReviewed(accountId, { orderId, variantId }) {
+    const existingReview = await prisma.review.findFirst({
+      where: {
+        accountId,
+        orderId,
+        variantId,
+      },
+      include: commonIncludeOptionsInReview,
+    });
+    if (existingReview) {
+      return existingReview;
+    }
+    return null;
+  }
+
   static async create(
     accountId, { orderId, variantId, productId, rating, comment, uploadedImageIds }
   ) {

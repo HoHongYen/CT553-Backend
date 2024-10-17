@@ -47,6 +47,15 @@ router.get(
     asyncHandler(ReviewController.getAllReviews)
 );
 
+// check if user has reviewed this product for this order
+router.post(
+    "/check",
+    body("orderId").notEmpty().withMessage("Order ID is missing").custom(existOrder),
+    body("variantId").notEmpty().withMessage("Variant ID is missing").custom(existVariant),
+    validate,
+    asyncHandler(ReviewController.checkIfUserHasReviewed)
+);
+
 router.post(
     "/",
     body("orderId").notEmpty().withMessage("Order ID is missing").custom(existOrder),

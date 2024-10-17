@@ -2,6 +2,16 @@ const { CreatedResponse, OKResponse } = require("../response/success");
 const ReviewService = require("../services/review");
 
 class ReviewController {
+
+  static async checkIfUserHasReviewed(req, res) {
+    new OKResponse({
+      metadata: await ReviewService.checkIfUserHasReviewed(req.account.id, {
+        orderId: req.body.orderId,
+        variantId: req.body.variantId,
+      }),
+    }).send(res);
+  }
+
   static async create(req, res) {
     new CreatedResponse({
       metadata: await ReviewService.create(req.account.id, {
