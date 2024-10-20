@@ -26,9 +26,10 @@ model UploadedImage {
 
   createdAt              DateTime                @default(now()) @map("created_at")
   updatedAt              DateTime                @updatedAt @map("updated_at")
-  ProductImageEmbeddings ProductImageEmbeddings?
+  productImageEmbeddings ProductImageEmbeddings?
   reviewImage            ReviewImage[]
-  ShopInfo               ShopInfo[]
+  shopInfo               ShopInfo[]
+  banner                 Banner[]
 
   @@map("uploaded_images")
 }
@@ -452,17 +453,31 @@ model SecurityPolicy {
   @@map("security_policies")
 }
 
-// model HomeBanner {
-//   id        Int      @id @default(autoincrement()) @map("home_banner_id")
-//   imageId   Int      @map("image_id")
-//   visible   Boolean  @default(true)
-//   createdAt DateTime @default(now()) @map("created_at")
-//   updatedAt DateTime @updatedAt @map("updated_at")
+model BannerCategory {
+  id        Int      @id @default(autoincrement()) @map("banner_category_id")
+  name      String  @unique
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  banner    Banner[]
 
-//   image UploadedImage[] @relation(fields: [imageId], references: [id], onDelete: Cascade)
+  @@map("banner_categories")
+}
 
-//   @@map("home_banners")
-// }
+model Banner {
+  id               Int            @id @default(autoincrement()) @map("banner_id")
+  imageId          Int            @map("image_id")
+  name             String
+  bannerCategoryId Int            @map("banner_category_id")
+  bannerCategory   BannerCategory @relation(fields: [bannerCategoryId], references: [id])
+  priority         Int            @default(0)
+  visible          Boolean        @default(true)
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+  image            UploadedImage  @relation(fields: [imageId], references: [id], onDelete: Cascade)
+
+  @@unique([bannerCategoryId, priority])
+  @@map("banners")
+}
 
 model ShopInfo {
   id                 Int     @id @default(autoincrement()) @map("shop_info_id")
@@ -495,7 +510,7 @@ model ShopInfo {
 
 model RatingRecommendation {
   id        Int   @id @default(autoincrement()) @map("rating_recommendation_id")
-  accountId    Int   @map("account_id")
+  accountId Int   @map("account_id")
   productId Int   @map("product_id")
   rating    Float
 

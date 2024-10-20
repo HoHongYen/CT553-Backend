@@ -24,6 +24,8 @@ router.use("/warrantyPolicies", require("./warrantyPolicy"));
 router.use("/securityPolicies", require("./securityPolicy"));
 router.use("/shopInfo", require("./shopInfo"));
 router.use("/recommend", require("./recommend"));
+router.use("/banners", require("./banner"));
+router.use("/bannerCategories", require("./bannerCategory"));
 
 router.use("/uploadTempData", require("./uploadTempData"));
 
