@@ -1,7 +1,6 @@
 const slugify = require("slugify");
 const prisma = require("../config/prismaClient");
 const UploadService = require("./upload");
-// const { readFileSync, rm, } = require("fs");
 const fs = require("fs").promises;
 const path = require("path");
 const {
@@ -681,6 +680,43 @@ ORDER BY cosine_similarity DESC LIMIT 5; `;
     return sortedProducts;
   }
 
+  static async getRecommendProducts(accountId) {
+    // base on ratings
+    let recommendProductIds = await ProductService.getRecommendProductsBasedOnRatings(accountId);
+    if (recommendProductIds.length < 10) {
+      // base on orders
+      const recommendProductsBasedOnOrderIds = await ProductService.getRecommendProductsBasedOnOrders(accountId);
+      recommendProductIds = [...recommendProductIds, ...recommendProductsBasedOnOrderIds];
+      // remove duplicate
+      recommendProductIds = [...new Set(recommendProductIds)];
+
+      if (recommendProductIds.length < 10) {
+        // base on view
+        const recommendProductsBasedOnViewCountIds = await ProductService.getRecommendProductsBasedOnViewCounts(accountId);
+        recommendProductIds = [...recommendProductIds, ...recommendProductsBasedOnViewCountIds];
+
+        // remove duplicate
+        recommendProductIds = [...new Set(recommendProductIds)];
+      }
+
+    } 
+
+    console.log("recommendProductIds", recommendProductIds);
+
+    const products = await prisma.product.findMany({
+      where: {
+        id: {
+          in: recommendProductIds,
+        },
+      },
+      include: commonIncludeOptionsInProduct,
+    });
+
+    let sortedProducts = recommendProductIds.map((id) => products.find((product) => product.id === id));
+
+    return sortedProducts;
+  }
+
 
   static async getRecommendProductsBasedOnOrders(accountId) {
     const orders = await prisma.order.findMany({
@@ -703,8 +739,9 @@ ORDER BY cosine_similarity DESC LIMIT 5; `;
       },
     });
 
-    if (orders.length === 0)
-      return await ProductService.getAll({ limit: 10, type: PRODUCT_NEWEST });
+    if (orders.length === 0) {
+      return [];
+    }
 
     const productIds = new Set();
 
@@ -736,39 +773,27 @@ ORDER BY cosine_similarity DESC LIMIT 5; `;
         )
         }) ORDER BY cosine_similarity DESC LIMIT ${limit}; `;
 
-      console.log("result", result);
-
       for (let item of result) {
         recommendProductIds.push(item.product_id);
         excludedProductIds.push(item.product_id);
       }
     }
 
-    const products = await prisma.product.findMany({
-      where: {
-        id: {
-          in: recommendProductIds,
-        },
-      },
-      include: commonIncludeOptionsInProduct,
-    });
-
-    return products;
+    return recommendProductIds;
   }
 
   static async getRecommendProductsBasedOnRatings(accountId) {
-    let productIds = await RecommendService.getRecommend(accountId);
+    let productIds = await RecommendService.getRecommendBaseOneRatings(accountId);
     productIds = productIds.map((item) => item.productId);
-    const products = await prisma.product.findMany({
-      where: {
-        id: {
-          in: productIds,
-        },
-      },
-      include: commonIncludeOptionsInProduct,
-    });
-    console.log("products", products);
-    return products;
+
+    return productIds;
+  }
+
+  static async getRecommendProductsBasedOnViewCounts(accountId) {
+    let productIds = await RecommendService.getRecommendBaseOnViewCounts(accountId);
+    productIds = productIds.map((item) => item.productId);
+
+    return productIds;
   }
 
   static async imageSearch(imageUrl, uploadedImagePath) {

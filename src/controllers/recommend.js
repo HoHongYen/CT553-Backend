@@ -3,15 +3,27 @@ const RecommendService = require("../services/recommend");
 
 class RecommendController {
 
-  static async getRecommend(req, res) {
+  static async getRecommendBaseOneRatings(req, res) {
     new OKResponse({
-      metadata: await RecommendService.getRecommend(req.params.userId),
+      metadata: await RecommendService.getRecommendBaseOneRatings(req.params.userId),
     }).send(res);
   }
 
-  static async saveRecommend(req, res) {
+  static async saveRatingRecommend(req, res) {
     new OKResponse({
-      metadata: await RecommendService.saveRecommend(req.body),
+      metadata: await RecommendService.saveRatingRecommend(req.body),
+    }).send(res);
+  }
+
+  static async getRecommendBaseOnViewCounts(req, res) {
+    new OKResponse({
+      metadata: await RecommendService.getRecommendBaseOnViewCounts(req.params.userId),
+    }).send(res);
+  }
+
+  static async addViewCountRecommend(req, res) {
+    new OKResponse({
+      metadata: await RecommendService.addViewCountRecommend(+req.body.accountId, +req.body.productId),
     }).send(res);
   }
 }

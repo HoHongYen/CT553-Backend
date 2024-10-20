@@ -10,8 +10,10 @@ const RecommendController = require("../../controllers/recommend");
 const router = require("express").Router();
 
 
-router.get("/:userId", asyncHandler(RecommendController.getRecommend));
+router.get("/ratings/:userId", asyncHandler(RecommendController.getRecommendBaseOneRatings));
+router.get("/viewCounts/:userId", asyncHandler(RecommendController.getRecommendBaseOnViewCounts));
 
-router.post("/", asyncHandler(RecommendController.saveRecommend));
+router.post("/viewCounts", asyncHandler(RecommendController.addViewCountRecommend));
+router.post("/", asyncHandler(RecommendController.saveRatingRecommend));
 
 module.exports = router;

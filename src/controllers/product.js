@@ -161,8 +161,7 @@ class ProductController {
     const accountId = +req.account.id;
 
     new OKResponse({
-      // metadata: await ProductService.getRecommendProductsBasedOnOrders(
-      metadata: await ProductService.getRecommendProductsBasedOnRatings(
+      metadata: await ProductService.getRecommendProducts(
         accountId
       ),
     }).send(res);
