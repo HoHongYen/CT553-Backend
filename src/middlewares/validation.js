@@ -51,6 +51,24 @@ const existCategories = async (categoryIds) => {
   }
 };
 
+const existBanner = async (bannerId) => {
+  if (!bannerId) return true;
+  if (!Number.parseInt(bannerId)) throw new BadRequest("Banner not found");
+  const foundBanner = await prisma.banner.findUnique({
+    where: { id: +bannerId },
+  });
+  if (!foundBanner) throw new BadRequest("Banner not found");
+};
+
+const existBannerCategory = async (bannerCategoryId) => {
+  if (!bannerCategoryId) return true;
+  if (!Number.parseInt(bannerCategoryId)) throw new BadRequest("Banner category not found");
+  const foundBanner = await prisma.bannerCategory.findUnique({
+    where: { id: +bannerCategoryId },
+  });
+  if (!foundBanner) throw new BadRequest("Banner category not found");
+};
+
 const existProduct = async (productId) => {
   if (!productId) return true;
   if (!Number.parseInt(productId)) throw new BadRequest("Product not found");
@@ -261,6 +279,8 @@ module.exports = {
   uniqueEmail,
   existCategory,
   existCategories,
+  existBanner,
+  existBannerCategory,
   existProduct,
   existProductWithSlug,
   existProductImage,

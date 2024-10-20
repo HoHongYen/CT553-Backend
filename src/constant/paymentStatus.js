@@ -1,6 +1,6 @@
-const PENDING = "Chờ thanh toán";
-const SUCCESS = "Thành công";
-const FAILED = "Thất bại";
+const PENDING = "PENDING";
+const SUCCESS = "SUCCESS";
+const FAILED = "FAILED";
 
 const PAYMENT_STATUSES = [PENDING, SUCCESS, FAILED];
 

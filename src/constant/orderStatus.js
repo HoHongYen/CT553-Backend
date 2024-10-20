@@ -1,9 +1,9 @@
-const AWAITING_CONFIRM = "Chờ xác nhận";
-const AWAITING_FULFILLMENT = "Đang xử lý";
-const DELIVERING = "Đang giao";
-const DELIVERED = "Đã giao";
-const CANCELED = "Đã hủy";
-const RETURNED = "Đổi trả";
+const AWAITING_CONFIRM = "AWAITING_CONFIRM";
+const AWAITING_FULFILLMENT = "AWAITING_FULFILLMENT";
+const DELIVERING = "DELIVERING";
+const DELIVERED = "DELIVERED";
+const CANCELED = "CANCELED";
+const RETURNED = "RETURNED";
 
 const ORDER_STATUSES = [
   AWAITING_CONFIRM,
