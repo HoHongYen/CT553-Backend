@@ -1,4 +1,3 @@
-const { ar } = require("date-fns/locale");
 const prisma = require("../config/prismaClient");
 
 class CategoryService {

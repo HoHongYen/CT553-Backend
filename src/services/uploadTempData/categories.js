@@ -103,6 +103,10 @@ const children4Categories = [
         thumbnailImageUrl: "https://tuongxinh.com.vn/wp-content/uploads/2021/04/FT66099-min.jpg",
     },
     {
+        name: "Tranh cây",
+        thumbnailImageUrl: "https://tuongxinh.com.vn/wp-content/uploads/2024/09/tranh-dan-tuong-3-42.jpg",
+    },
+    {
         name: "Tranh hoa",
         thumbnailImageUrl: "https://tuongxinh.com.vn/wp-content/uploads/2018/06/33873852_175694253268943_8974033272468144128_n-2.jpg",
     },
@@ -117,6 +121,10 @@ const children4Categories = [
     {
         name: "Tranh đồng quê",
         thumbnailImageUrl: "https://tuongxinh.com.vn/wp-content/uploads/2024/07/tranh-phong-canh-2-1.jpg",
+    },
+    {
+        name: "Tranh động vật",
+        thumbnailImageUrl: "https://tuongxinh.com.vn/wp-content/uploads/2024/05/tranh-dan-tuong-2.jpg",
     },
 ]
 

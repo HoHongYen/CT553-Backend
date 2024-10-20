@@ -506,12 +506,18 @@ class ProductService {
   }
 
   static async getAllImageEmbeddings() {
-    return await prisma.productImageEmbeddings.findMany();
+    // return await prisma.productImageEmbeddings.findMany();
+    const res = await prisma.productImageEmbeddings.findMany({
+      orderBy: {
+        id: "desc",
+      },
+    });
+    return res.slice(0, 5);
   }
 
   static async createImageEmbeddingsForAllProducts() {
 
-    await prisma.$queryRaw`TRUNCATE TABLE product_image_embeddings RESTART IDENTITY`;
+    // await prisma.$queryRaw`TRUNCATE TABLE product_image_embeddings RESTART IDENTITY`;
 
     let products = await prisma.product.findMany({
       select: {
@@ -541,24 +547,41 @@ class ProductService {
       },
     });
 
-    products = products.slice(6, 8);
+    // find product that has no embeddings
+    // let hasEmbeddings = await prisma.productImageEmbeddings.findMany({
+    //   select: {
+    //     productId: true,
+    //   },
+    // });
+
+    // hasEmbeddings = hasEmbeddings.map((item) => item.productId);
+
+    // products = products.filter((product) => !hasEmbeddings.includes(product.id));
+
+    products = products.slice(0, 5);
 
     products.map(async (product) => {
       let images = product.images.map((image) => {
         return { id: image.image.id, path: image.image.path };
       });
       let thumbnailImage = { id: product.thumbnailImage.id, path: product.thumbnailImage.path };
-      let viewImage = { id: product.viewImage.id, path: product.viewImage.path };
-
-      let allImages = [thumbnailImage, viewImage, ...images];
-      console.log("allImages", allImages);
+      let allImages = [thumbnailImage, ...images];
+      if (product.viewImage) {
+        let viewImage = { id: product.viewImage.id, path: product.viewImage.path };
+        allImages = [thumbnailImage, viewImage, ...images];
+      }
+      console.log("product.id", product.id);
 
       Promise.all(
         allImages.map(async (image) => {
-          const embedding = await generateEmbeddingsFromImageUrl(image.path);
-          // console.log("embedding", embedding);
-          await prisma.$queryRaw`
-        INSERT INTO product_image_embeddings (product_id, image_id, embedding) VALUES (${product.id}, ${image.id}, ${embedding}::vector)`;
+          try {
+            const embedding = await generateEmbeddingsFromImageUrl(image.path);
+            // console.log("embedding", embedding);
+            await prisma.$queryRaw`
+          INSERT INTO product_image_embeddings (product_id, image_id, embedding) VALUES (${product.id}, ${image.id}, ${embedding}::vector)`;
+          } catch (error) {
+            console.log("error", error);
+          }
         }));
     })
   }

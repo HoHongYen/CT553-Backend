@@ -815,7 +815,7 @@ class OrderService {
       if (variant.product.productDiscount.length > 0) {
         // const discount = variant.product.productDiscount[0];
         let discount;
-        for (let i = 1; i < variant.product.productDiscount.length; i++) {
+        for (let i = 0; i < variant.product.productDiscount.length; i++) {
           discount = variant.product.productDiscount[i];
           if (discount.startDate < new Date() && discount.endDate > new Date()) {
             break;

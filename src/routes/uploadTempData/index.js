@@ -2,7 +2,7 @@ const { param, body, query } = require("express-validator");
 const {
   validate,
 } = require("../../middlewares/validation");
-const { uploadRoles, uploadPaymentMethods, uploadPaymentStatuses, uploadOrderStatuses } = require("../../services/uploadTempData/basic");
+const { uploadRoles, uploadPaymentMethods, uploadPaymentStatuses, uploadOrderStatuses, createDiscountForProducts } = require("../../services/uploadTempData/basic");
 const { uploadParentCategories, uploadChildrenCategories } = require("../../services/uploadTempData/categories");
 const { deleteCategories, deleteImages, deleteProducts } = require("../../services/uploadTempData/delete");
 const { asyncHandler } = require("../../middlewares/asyncHandler");
@@ -15,7 +15,8 @@ router.post(
     // uploadRoles();
     // uploadPaymentMethods();
     // uploadPaymentStatuses();
-    uploadOrderStatuses();
+    // uploadOrderStatuses();
+    createDiscountForProducts();
     res.send("Basic data uploaded successfully");
   }
 );
