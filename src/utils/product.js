@@ -80,8 +80,9 @@ const getQueryObjectBasedOnFilters = async (currentQueryObject, filters) => {
         CategoryService.getCategoriesRecursivelyFromParent(+categoryId)
       )
     );
-
+    
     const recursiveCategoryIds = Array.from(new Set(res.flat()));
+    
     queryObject.where = {
       categories: {
         some: {

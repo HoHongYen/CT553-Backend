@@ -270,6 +270,7 @@ class ProductService {
     filterMaxPrice,
     sortBy,
   }) {
+
     let query = {
       include: commonIncludeOptionsInProduct,
       take: limit,
@@ -300,6 +301,51 @@ class ProductService {
           },
         }
       }
+    }
+
+    // sort by rating
+    if (sortBy?.field === "rating") {
+      // remove limit field
+      query = { ...query, take: undefined };
+      let products = await prisma.product.findMany({
+        ...query,
+      });
+      let productWithRatings = products.map((product) => {
+        const reviews = product.reviews;
+        console.log("reviews", reviews);
+        if (!reviews.length) {
+          return { ...product, rating: 0 };
+        }
+        const totalRating = reviews.reduce((acc, review) => {
+          return acc + review.rating;
+        }, 0);
+        const rating = (totalRating / reviews.length).toFixed(1);
+        return { ...product, rating };
+      });
+
+      console.log("productWithRatings", productWithRatings);
+      for (let product of productWithRatings) {
+        console.log("product", product.id, product.rating);
+      }
+
+      if (sortBy.direction === "asc") {
+        productWithRatings = productWithRatings.sort((a, b) => a.rating - b.rating);
+      } else {
+        productWithRatings = productWithRatings.sort((a, b) => b.rating - a.rating);
+      }
+      // remove rating field
+      products = productWithRatings.map(({ rating, ...product }) => product);
+
+      const offset = page > 1 ? (page - 1) * limit : 0;
+      const totalPages = Math.ceil(productWithRatings.length / limit);
+
+      return {
+        products: productWithRatings.slice(offset, offset + limit),
+        pagination: {
+          totalProducts: productWithRatings.length,
+          totalPages,
+        },
+      };
     }
 
     const count = await prisma.product.count({
@@ -699,7 +745,7 @@ ORDER BY cosine_similarity DESC LIMIT 5; `;
         recommendProductIds = [...new Set(recommendProductIds)];
       }
 
-    } 
+    }
 
     console.log("recommendProductIds", recommendProductIds);
 
