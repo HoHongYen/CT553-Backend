@@ -3,6 +3,35 @@ const bcrypt = require("bcrypt");
 const { BadRequest } = require("../response/error");
 
 class AccountService {
+
+  static async create({
+    fullName,
+    email,
+    password,
+    phone,
+    gender,
+    birthday,
+    avatarId,
+    roleId = 3,
+    active = true,
+  }) {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newAccount = await prisma.account.create({
+      data: {
+        fullName,
+        email,
+        password: hashedPassword,
+        phone,
+        gender,
+        birthday,
+        avatarId: +avatarId,
+        roleId: +roleId,
+        active,
+      },
+    });
+    return newAccount;
+  }
+
   static async getAll({ customerSearch, active, role, gender, sortBy, page, limit }) {
     let query = {
       include: {

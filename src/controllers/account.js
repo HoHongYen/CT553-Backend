@@ -13,12 +13,30 @@ class AccountController {
     }).send(res);
   }
 
+  static async adminUpdateAccount(req, res) {
+    delete req.body.password;
+    delete req.body.email;
+    new OKResponse({
+      metadata: await AccountService.updateInformation(
+        +req.params.id,
+        req.body
+      ),
+    }).send(res);
+  }
+
   static async changePassword(req, res) {
     new OKResponse({
       metadata: await AccountService.changePassword(
         +req.account.id,
         req.body
       ),
+    }).send(res);
+  }
+
+  static async create(req, res) {
+    new CreatedResponse({
+      message: "Create user successfully",
+      metadata: await AccountService.create(req.body),
     }).send(res);
   }
 

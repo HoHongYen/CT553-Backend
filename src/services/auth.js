@@ -13,6 +13,7 @@ class AuthService {
     phone,
     gender,
     birthday,
+    avatarId,
   }) {
     const hashedPassword = await bcrypt.hash(password, 10);
     const newAccount = await prisma.account.create({
@@ -23,6 +24,7 @@ class AuthService {
         phone,
         gender,
         birthday,
+        avatarId: +avatarId,
       },
     });
     return newAccount;
@@ -85,7 +87,7 @@ class AuthService {
         isGoogleLogin: true,
       },
     });
-    
+
     account = await prisma.account.findUnique({
       where: { email },
       include: {
