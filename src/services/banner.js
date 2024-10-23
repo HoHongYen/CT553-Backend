@@ -2,6 +2,7 @@ const prisma = require("../config/prismaClient");
 
 class BannerService {
 
+    // for admin
     static async getAll() {
         let query = {
             where: {
@@ -20,6 +21,7 @@ class BannerService {
         return banners;
     }
 
+    // for client
     static async getBannerByBannerCategoryId(bannerCategoryId) {
         let query = {
             where: {

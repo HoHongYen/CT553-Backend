@@ -3,6 +3,21 @@ const { asyncHandler } = require("../middlewares/asyncHandler");
 const jwt = require("jsonwebtoken");
 
 const permission = (permittedRoles) => (req, res, next) => {
+  console.log("req", req);
+  // const reqPath = req.originalUrl.replace(/\?.*$/, '');
+  // console.log("req.path", reqPath);
+  const baseUrl = req.baseUrl;
+  const reqRoute = req.route.path;
+  const fullPath = baseUrl + reqRoute;
+  console.log("fullPath", fullPath);
+
+  // const tempPath = "/api/accounts/toggleActive/:accountId";
+  // console.log('Check path', fullPath === tempPath);
+
+  // get method
+  const reqMethod = req.method;
+  console.log("req.method", reqMethod);
+  console.log("permittedRoles", permittedRoles);
   const accountRole = req.account.role;
 
   if (!accountRole || !permittedRoles.includes(accountRole))

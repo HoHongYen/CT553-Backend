@@ -20,7 +20,8 @@ class ProductController {
         limit: +req.query.limit,
         productIds: req.query.productIds,
         page: +req.query.page || 1,
-        filter: req.query.filter,
+        discount: req.query.discount,
+        visible: req.query.visible,
         filterMinPrice: +req.query.filterMinPrice,
         filterMaxPrice: +req.query.filterMaxPrice,
         sortBy: req.query.sortBy,
@@ -49,6 +50,12 @@ class ProductController {
   static async update(req, res) {
     new OKResponse({
       metadata: await ProductService.update(+req.params.id, req.body),
+    }).send(res);
+  }
+
+  static async toggleHide(req, res) {
+    new CreatedResponse({
+      metadata: await ProductService.toggleHide(req.params.productId),
     }).send(res);
   }
 

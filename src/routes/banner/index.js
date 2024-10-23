@@ -8,15 +8,14 @@ const { ADMIN, EMPLOYEE } = require("../../constant/roles");
 const router = require("express").Router();
 
 router.get("/", asyncHandler(BannerController.getAll));
-
-router.get("/admin", asyncHandler(BannerController.getAllForAdmin));
-
 router.get("/getByBannerCategory/:bannerCategoryId", asyncHandler(BannerController.getBannerByBannerCategoryId));
 
-// router.use(authentication);
+
+router.use(authentication);
+router.get("/admin", permission([ADMIN, EMPLOYEE]), asyncHandler(BannerController.getAllForAdmin));
 
 router.post(
-    "",
+    "/",
     // permission([ADMIN, EMPLOYEE]),
     body("imageId").notEmpty().withMessage("ImageId is missing"),
     body("priority").notEmpty().withMessage("Priority is missing"),

@@ -265,7 +265,8 @@ class ProductService {
     productIds = [],
     page = 1,
     limit = 8,
-    filter,
+    discount,
+    visible,
     filterMinPrice,
     filterMaxPrice,
     sortBy,
@@ -280,7 +281,8 @@ class ProductService {
       categoryIds,
       productIds,
       type,
-      filter,
+      discount,
+      visible,
       filterMaxPrice,
       filterMinPrice,
       sortBy,
@@ -378,6 +380,7 @@ class ProductService {
     const product = prisma.product.findUnique({
       where: {
         id: productId,
+        visible: true,
       },
       include: commonIncludeOptionsInProduct,
     });
@@ -391,6 +394,7 @@ class ProductService {
     const product = await prisma.product.findUnique({
       where: {
         slug: productSlug,
+        visible: true,
       },
       include: commonIncludeOptionsInProduct,
     });
@@ -419,6 +423,26 @@ class ProductService {
         id: productId,
       },
       data: updatedData,
+    });
+  }
+
+  static async toggleHide(productId) {
+    const product = await prisma.product.findUnique({
+      where: {
+        id: +productId,
+      },
+      select: {
+        visible: true,
+      },
+    });
+
+    return prisma.product.update({
+      where: {
+        id: +productId,
+      },
+      data: {
+        visible: !product.visible,
+      },
     });
   }
 
@@ -512,9 +536,16 @@ class ProductService {
 
   static async createTextEmbeddingsForAllProducts() {
 
-    await prisma.$queryRaw`TRUNCATE TABLE product_embeddings RESTART IDENTITY`;
+    // await prisma.$queryRaw`TRUNCATE TABLE product_embeddings RESTART IDENTITY`;
 
     let products = await prisma.product.findMany({
+      // where: {
+      //   id: {
+      //     in: [19, 20, 58, 203,
+      //       210, 207, 209, 211,
+      //       205]
+      //   }
+      // },
       select: {
         id: true,
         name: true,
@@ -531,18 +562,27 @@ class ProductService {
       },
     });
 
+    // find product that has no embeddings
+    let hasEmbeddings = await prisma.productEmbeddings.findMany({
+      select: {
+        productId: true,
+      },
+    });
+
+    hasEmbeddings = hasEmbeddings.map((item) => item.productId);
+
+    products = products.filter((product) => !hasEmbeddings.includes(product.id));
+
+    const productIds = products.map((product) => product.id);
+    console.log("productIds", productIds);
+
     Promise.all(
       products.map(async (product) => {
 
         const categoryNames = product.categories.map((category) => category.category.name).join(" ");
 
-        console.log("categoryNames", categoryNames);
-
         const textToTransform = `${product.name} ${categoryNames} ${product.overview}`;
-        console.log("textToTransform", textToTransform);
         const embedding = await generateEmbeddingsFromTextV2(textToTransform);
-
-        // console.log("embedding", embedding);
 
         await prisma.$queryRaw`
         INSERT INTO product_embeddings (product_id, embedding) VALUES (${product.id} , ${embedding}::vector)`;
@@ -637,6 +677,7 @@ class ProductService {
         name: {
           search: query,
         },
+        visible: true,
       },
       include: commonIncludeOptionsInProduct,
     };
@@ -678,6 +719,7 @@ class ProductService {
         id: {
           in: result.map((item) => item.product_id),
         },
+        visible: true,
       },
       include: commonIncludeOptionsInProduct,
     });
@@ -693,14 +735,16 @@ class ProductService {
 
   // hien thi 5 san pham lien quan
   static async getRelatedProductsBasedOnText(productId) {
+    console.log("productId", productId);
     const productEmbedding =
       await prisma.$queryRaw`SELECT embedding:: text, product_id FROM product_embeddings WHERE product_id = ${productId} ORDER BY product_id ASC; `;
 
+    console.log("productEmbedding", productEmbedding);
     const recommendProductIds = [];
 
     let result = await prisma.$queryRaw`SELECT 1 - (embedding <=> ${productEmbedding[0].embedding
       }::vector) AS cosine_similarity, product_id FROM product_embeddings WHERE product_id <> ${productId}
-ORDER BY cosine_similarity DESC LIMIT 5; `;
+ORDER BY cosine_similarity DESC; `;
 
     console.log("result", result);
 
@@ -713,16 +757,26 @@ ORDER BY cosine_similarity DESC LIMIT 5; `;
         id: {
           in: recommendProductIds,
         },
+        visible: true,
       },
       include: commonIncludeOptionsInProduct,
     });
 
+    console.log("products", products.length);
+
     // sort by result order
-    const sortedProducts = [];
+    let sortedProducts = [];
     for (let item of result) {
       const product = products.find((product) => product.id === item.product_id);
       sortedProducts.push(product);
     }
+
+    // remove null
+    sortedProducts = sortedProducts.filter((item) => item);
+
+    sortedProducts = sortedProducts.slice(0, 5);
+
+
     return sortedProducts;
   }
 
@@ -754,6 +808,7 @@ ORDER BY cosine_similarity DESC LIMIT 5; `;
         id: {
           in: recommendProductIds,
         },
+        visible: true,
       },
       include: commonIncludeOptionsInProduct,
     });
@@ -762,7 +817,6 @@ ORDER BY cosine_similarity DESC LIMIT 5; `;
 
     return sortedProducts;
   }
-
 
   static async getRecommendProductsBasedOnOrders(accountId) {
     const orders = await prisma.order.findMany({
@@ -881,6 +935,7 @@ ORDER BY cosine_similarity DESC LIMIT 5; `;
       const product = await prisma.product.findUnique({
         where: {
           id: foundResult.product_id,
+          visible: true,
         },
         include: commonIncludeOptionsInProduct,
       });

@@ -46,6 +46,9 @@ class AuthService {
 
     if (!matchedPassword) throw new BadRequest("Invalid credentials");
 
+    // check if account is blocked
+    if (!account.active) throw new BadRequest("Account is blocked");
+
     return generateToken(account);
   }
 
@@ -59,7 +62,11 @@ class AuthService {
       },
     });
 
-    if (account) return generateToken(account);
+    if (account) {
+      // check if account is blocked
+      if (!account.active) throw new BadRequest("Account is blocked");
+      return generateToken(account);
+    }
 
     // create account
     const form = new FormData();
@@ -121,6 +128,9 @@ class AuthService {
 
     if (!matchedPassword) throw new BadRequest("Invalid credentials");
 
+    // check if account is blocked
+    if (!account.active) throw new BadRequest("Account is blocked");
+
     return generateToken(account);
   }
 
@@ -140,6 +150,10 @@ class AuthService {
     });
 
     if (!account) throw new BadRequest("Invalid credentials");
+
+    // check if account is blocked
+    if (!account.active) throw new BadRequest("Account is blocked");
+
     return generateToken(account);
   }
 }

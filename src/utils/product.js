@@ -5,7 +5,8 @@ const {
   PRODUCT_TRENDING,
   PRODUCT_SALES,
 } = require("../constant/productType");
-const { commonIncludeOptionsInReview }  = require("../utils/commonInclude");
+const { commonIncludeOptionsInReview } = require("../utils/commonInclude");
+const { vi } = require("date-fns/locale");
 
 // for client
 const commonIncludeOptionsInProduct = {
@@ -42,7 +43,7 @@ const commonIncludeOptionsInProduct = {
     where: {
       visible: true,
     },
-    include : commonIncludeOptionsInReview
+    include: commonIncludeOptionsInReview
   },
 };
 
@@ -66,12 +67,12 @@ const commonIncludeOptionsInProductAdmin = {
   variants: true,
   productDiscount: true,
   reviews: {
-    include : commonIncludeOptionsInReview
+    include: commonIncludeOptionsInReview
   },
 };
 
 const getQueryObjectBasedOnFilters = async (currentQueryObject, filters) => {
-  const { productIds, categoryIds, type, filter, filterMinPrice, filterMaxPrice, sortBy } = filters;
+  const { productIds, categoryIds, type, discount, visible, filterMinPrice, filterMaxPrice, sortBy } = filters;
   const queryObject = { ...currentQueryObject };
 
   if (categoryIds.length > 0) {
@@ -80,9 +81,9 @@ const getQueryObjectBasedOnFilters = async (currentQueryObject, filters) => {
         CategoryService.getCategoriesRecursivelyFromParent(+categoryId)
       )
     );
-    
+
     const recursiveCategoryIds = Array.from(new Set(res.flat()));
-    
+
     queryObject.where = {
       categories: {
         some: {
@@ -140,15 +141,23 @@ const getQueryObjectBasedOnFilters = async (currentQueryObject, filters) => {
     queryObject.orderBy = {
       createdAt: "desc",
     };
+    queryObject.where = {
+      ...queryObject.where,
+      visible: true,
+    };
   }
 
   if (type === PRODUCT_TRENDING) {
     queryObject.orderBy = {
       soldNumber: "desc",
     };
+    queryObject.where = {
+      ...queryObject.where,
+      visible: true,
+    };
   }
 
-  if (type === PRODUCT_SALES || filter?.value === "dang-giam-gia") {
+  if (type === PRODUCT_SALES || discount === "dang-giam-gia") {
     if (!queryObject.where) Object.assign(queryObject, { where: {} });
     queryObject.where.productDiscount = {
       some: {
@@ -160,9 +169,13 @@ const getQueryObjectBasedOnFilters = async (currentQueryObject, filters) => {
         },
       },
     };
+    queryObject.where = {
+      ...queryObject.where,
+      visible: true,
+    };
   }
 
-  if (filter?.value === "khong-giam-gia") {
+  if (discount === "khong-giam-gia") {
     if (!queryObject.where) Object.assign(queryObject, { where: {} });
     queryObject.where.productDiscount = {
       none: {
@@ -173,6 +186,20 @@ const getQueryObjectBasedOnFilters = async (currentQueryObject, filters) => {
           gte: new Date().toISOString(),
         },
       },
+    };
+  }
+
+  if (visible === "true") {
+    if (!queryObject.where) Object.assign(queryObject, { where: {} });
+    queryObject.where = {
+      ...queryObject.where,
+      visible: true,
+    };
+  } else if (visible === "false") {
+    if (!queryObject.where) Object.assign(queryObject, { where: {} });
+    queryObject.where = {
+      ...queryObject.where,
+      visible: false,
     };
   }
 

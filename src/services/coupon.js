@@ -53,10 +53,12 @@ class CouponService {
     });
   }
 
+  // for admin
   static async getAll() {
     return await prisma.coupon.findMany();
   }
 
+  // for client
   static async getValidCoupons() {
     return await prisma.coupon.findMany({
       where: {

@@ -20,6 +20,7 @@ class AccountController {
       metadata: await AccountService.updateInformation(
         +req.params.id,
         req.body
+        
       ),
     }).send(res);
   }

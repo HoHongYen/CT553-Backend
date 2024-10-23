@@ -118,6 +118,16 @@ router.put(
   validate,
 );
 
+// hide product
+router.put(
+  "/toggleHide/:productId",
+  param("productId")
+      .notEmpty()
+      .withMessage("product ID is missing"),
+  validate,
+  asyncHandler(ProductController.toggleHide)
+);
+
 router.delete(
   "/:id",
   // permission([ADMIN, EMPLOYEE]),
