@@ -85,11 +85,47 @@ model Address {
 }
 
 model Role {
-  id       Int       @id @default(autoincrement()) @map("role_id")
-  role     String
-  accounts Account[]
+  id          Int              @id @default(autoincrement()) @map("role_id")
+  role        String
+  accounts    Account[]
+  permissions RolePermission[]
 
   @@map("roles")
+}
+
+model Permission {
+  id   Int    @id @default(autoincrement()) @map("permission_id")
+  name String 
+
+  api      String
+  method   String
+  roles    RolePermission[]
+  moduleId Int
+  module   Module           @relation(fields: [moduleId], references: [id])
+
+  @@unique([api, method])
+  @@map("permissions")
+}
+
+model Module {
+  id   Int    @id @default(autoincrement()) @map("module_id")
+  name String @unique
+
+  permissions Permission[]
+
+  @@map("modules")
+}
+
+model RolePermission {
+  id           Int @id @default(autoincrement()) @map("role_permission_id")
+  roleId       Int @map("role_id")
+  permissionId Int @map("permission_id")
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+  @@map("role_permissions")
 }
 
 model Category {
