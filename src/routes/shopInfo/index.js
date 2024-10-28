@@ -1,6 +1,6 @@
 const { body, param, query } = require("express-validator");
 const { asyncHandler } = require("../../middlewares/asyncHandler");
-const { authentication } = require("../../middlewares/auth");
+const { authentication, permission } = require("../../middlewares/auth");
 const {
     validate,
     existProvince,
@@ -9,16 +9,24 @@ const {
 } = require("../../middlewares/validation");
 const ShopInfoController = require("../../controllers/shopInfo");
 
-const router = require("express").Router();
+// const router = require("express").Router();
+
+const express = require("express");
+const router = express.Router();
+const protectedRouter = express.Router();
+
+protectedRouter.use(authentication);
 
 router.get(
-    "/",
+    "",
+    permission(),
     validate,
     asyncHandler(ShopInfoController.getOne)
 );
 
-router.post(
-    "/",
+protectedRouter.post(
+    "",
+    permission(),
     body("name")
         .notEmpty()
         .withMessage("name is missing"),
@@ -43,8 +51,9 @@ router.post(
     asyncHandler(ShopInfoController.create)
 );
 
-router.put(
+protectedRouter.put(
     "/:shopInfoId",
+    permission(),
     param("shopInfoId")
         .notEmpty()
         .withMessage("shopInfo ID is missing"),
@@ -64,4 +73,4 @@ router.put(
     asyncHandler(ShopInfoController.update)
 );
 
-module.exports = router;
+module.exports = { router, protectedRouter };

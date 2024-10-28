@@ -1,23 +1,30 @@
 const { body, param, query } = require("express-validator");
 const { asyncHandler } = require("../../middlewares/asyncHandler");
-const { authentication } = require("../../middlewares/auth");
+const { authentication, permission } = require("../../middlewares/auth");
 const {
     validate,
 } = require("../../middlewares/validation");
 const ReturnPolicyController = require("../../controllers/returnPolicy");
 
-const router = require("express").Router();
+// const router = require("express").Router();
+const express = require("express");
+const router = express.Router();
+const protectedRouter = express.Router();
 
-router.get(
-    "/",
+protectedRouter.use(authentication);
+
+protectedRouter.get(
+    "",
+    permission(),
     validate,
     asyncHandler(ReturnPolicyController.getAll)
 );
 
-router.get("/current", asyncHandler(ReturnPolicyController.getCurrent));
+router.get("/current", permission(), asyncHandler(ReturnPolicyController.getCurrent));
 
-router.get(
+protectedRouter.get(
     "/:policyId",
+    permission(),
     param("policyId")
         .notEmpty()
         .withMessage("policy ID is missing"),
@@ -25,16 +32,18 @@ router.get(
     asyncHandler(ReturnPolicyController.getById)
 );
 
-router.post(
-    "/",
+protectedRouter.post(
+    "",
+    permission(),
     body("visible").notEmpty().withMessage("Visibility is missing"),
     body("content").notEmpty().withMessage("Content is missing"),
     validate,
     asyncHandler(ReturnPolicyController.create)
 );
 
-router.put(
+protectedRouter.put(
     "/:policyId",
+    permission(),
     param("policyId")
         .notEmpty()
         .withMessage("policy ID is missing"),
@@ -42,9 +51,10 @@ router.put(
     asyncHandler(ReturnPolicyController.update)
 );
 
-// hide review
-router.put(
+// hide policy
+protectedRouter.put(
     "/toggleHide/:policyId",
+    permission(),
     param("policyId")
         .notEmpty()
         .withMessage("policyId ID is missing"),
@@ -52,4 +62,4 @@ router.put(
     asyncHandler(ReturnPolicyController.toggleHide)
 );
 
-module.exports = router;
+module.exports = { router, protectedRouter };

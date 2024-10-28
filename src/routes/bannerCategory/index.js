@@ -5,28 +5,33 @@ const { existBannerCategory, validate } = require("../../middlewares/validation"
 const { authentication, permission } = require("../../middlewares/auth");
 const { ADMIN, EMPLOYEE } = require("../../constant/roles");
 
-const router = require("express").Router();
+// const router = require("express").Router();
+const express = require("express");
+const router = express.Router();
+const protectedRouter = express.Router();
 
-router.get("/", asyncHandler(BannerCategoryController.getAll));
+protectedRouter.use(authentication);
+
+protectedRouter.get("", permission(), asyncHandler(BannerCategoryController.getAll));
 
 router.get("/:id", asyncHandler(BannerCategoryController.getOne));
 
 // router.use(authentication);
 
-router.post(
+protectedRouter.post(
     "",
-    // permission([ADMIN, EMPLOYEE]),
+    permission(),
     body("name").notEmpty().withMessage("Name is missing"),
     validate,
     asyncHandler(BannerCategoryController.create)
 );
 
-router.put(
+protectedRouter.put(
     "/:id",
-    // permission([ADMIN, EMPLOYEE]),
+    permission(),
     param("id").custom(existBannerCategory),
     validate,
     asyncHandler(BannerCategoryController.update)
 );
 
-module.exports = router;
+module.exports = { router, protectedRouter };

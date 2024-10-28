@@ -1,7 +1,7 @@
 const { body, param, query } = require("express-validator");
 const ReviewController = require("../../controllers/review");
 const { asyncHandler } = require("../../middlewares/asyncHandler");
-const { authentication } = require("../../middlewares/auth");
+const { authentication, permission } = require("../../middlewares/auth");
 const {
     validate,
     existAccount,
@@ -14,7 +14,13 @@ const {
     existReviewOfAccount,
 } = require("../../middlewares/validation");
 
-const router = require("express").Router();
+// const router = require("express").Router();
+
+const express = require("express");
+const router = express.Router();
+const protectedRouter = express.Router();
+
+protectedRouter.use(authentication);
 
 // get top 3 newest reviews and highest rating reviews of all products
 router.get(
@@ -31,24 +37,26 @@ router.get(
     asyncHandler(ReviewController.getAllReviewsOfProduct)
 );
 
-router.use(authentication);
+// router.use(authentication);
 
 // get all reviews of an account by admin
-router.get(
+protectedRouter.get(
     "/account/:accountId",
+    permission(),
     validate,
     asyncHandler(ReviewController.getAllReviewsOfAccount)
 );
 
 // get all review by admin
-router.get(
-    "/",
+protectedRouter.get(
+    "",
+    permission(),
     validate,
     asyncHandler(ReviewController.getAllReviews)
 );
 
 // check if user has reviewed this product for this order
-router.post(
+protectedRouter.post(
     "/check",
     body("orderId").notEmpty().withMessage("Order ID is missing").custom(existOrder),
     body("variantId").notEmpty().withMessage("Variant ID is missing").custom(existVariant),
@@ -56,8 +64,9 @@ router.post(
     asyncHandler(ReviewController.checkIfUserHasReviewed)
 );
 
-router.post(
-    "/",
+protectedRouter.post(
+    "",
+    permission(),
     body("orderId").notEmpty().withMessage("Order ID is missing").custom(existOrder),
     body("variantId").notEmpty().withMessage("Variant ID is missing").custom(existVariant),
     body("productId").notEmpty().withMessage("Product ID is missing").custom(existProduct),
@@ -102,8 +111,9 @@ router.delete(
 );
 // review_image end
 
-router.put(
+protectedRouter.put(
     "/:reviewId",
+    permission(),
     param("reviewId")
         .notEmpty()
         .withMessage("review ID is missing")
@@ -115,8 +125,9 @@ router.put(
 );
 
 // hide review
-router.put(
+protectedRouter.put(
     "/toggleHide/:reviewId",
+    permission(),
     param("reviewId")
         .notEmpty()
         .withMessage("review ID is missing"),
@@ -124,4 +135,4 @@ router.put(
     asyncHandler(ReviewController.toggleHide)
 );
 
-module.exports = router;
+module.exports = { router, protectedRouter };

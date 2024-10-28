@@ -1,7 +1,7 @@
 const { body, query, param } = require("express-validator");
 const OrderController = require("../../controllers/order");
 const { asyncHandler } = require("../../middlewares/asyncHandler");
-const { authentication } = require("../../middlewares/auth");
+const { authentication, permission } = require("../../middlewares/auth");
 const {
   validate,
   existAddressOfAccount,
@@ -10,19 +10,25 @@ const {
 } = require("../../middlewares/validation");
 const { ORDER_STATUS_ID_MAPPING } = require("../../constant/orderStatus");
 
-const router = require("express").Router();
+// const router = require("express").Router();
+const express = require("express");
+const router = express.Router();
+const protectedRouter = express.Router();
 
-router.get("/all", asyncHandler(OrderController.getAll));
+protectedRouter.use(authentication);
+
+protectedRouter.get("/all", permission(), asyncHandler(OrderController.getAll));
 router.get("/allForReport", asyncHandler(OrderController.getAllForReport));
 router.get("/status-all", asyncHandler(OrderController.getAllOrderStatus));
 
-router.use(authentication);
+// router.use(authentication);
 
-router.get("/:orderId", asyncHandler(OrderController.getById));
-router.get("/customer/:orderId", asyncHandler(OrderController.customerGetById));
+protectedRouter.get("/:orderId", permission(), asyncHandler(OrderController.getById));
+protectedRouter.get("/customer/:orderId", asyncHandler(OrderController.customerGetById));
 
-router.put(
+protectedRouter.put(
   "/:orderId/status",
+  permission(),
   param("orderId").custom(existOrder),
   body("fromStatus")
     .notEmpty()
@@ -38,8 +44,9 @@ router.put(
   asyncHandler(OrderController.updateOrderStatus)
 );
 
-router.post(
+protectedRouter.post(
   "",
+  permission(),
   body("totalPrice").notEmpty().withMessage("Total price is missing"),
   body("totalDiscount").notEmpty().withMessage("Total discount is missing"),
   body("finalPrice").notEmpty().withMessage("Final price is missing"),
@@ -68,18 +75,18 @@ router.post(
   asyncHandler(OrderController.create)
 );
 
-router.get(
-  "/",
+protectedRouter.get(
+  "",
   query("orderStatusId").notEmpty().withMessage("Order status ID is mising"),
   validate,
   asyncHandler(OrderController.getOrdersOfBuyerByOrderStatus)
 );
 
-router.put(
+protectedRouter.put(
   "/:orderId",
   param("orderId").custom(existOrderOfAccount),
   validate,
   asyncHandler(OrderController.cancel)
 );
 
-module.exports = router;
+module.exports = { router, protectedRouter };

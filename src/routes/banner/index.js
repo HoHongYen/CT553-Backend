@@ -1,22 +1,26 @@
 const { param, body } = require("express-validator");
-const BannerController = require("../../controllers/banner");
 const { asyncHandler } = require("../../middlewares/asyncHandler");
 const { existBanner, validate } = require("../../middlewares/validation");
 const { authentication, permission } = require("../../middlewares/auth");
 const { ADMIN, EMPLOYEE } = require("../../constant/roles");
+const BannerController = require("../../controllers/banner");
 
-const router = require("express").Router();
+// const router = require("express").Router();
+const express = require("express");
+const router = express.Router();
+const protectedRouter = express.Router();
 
-router.get("/", asyncHandler(BannerController.getAll));
-router.get("/getByBannerCategory/:bannerCategoryId", asyncHandler(BannerController.getBannerByBannerCategoryId));
+protectedRouter.use(authentication);
 
+router.get("", asyncHandler(BannerController.getAll));
+router.get("/getByBannerCategory/:bannerCategoryId", permission(), asyncHandler(BannerController.getBannerByBannerCategoryId));
 
-router.use(authentication);
-router.get("/admin", permission([ADMIN, EMPLOYEE]), asyncHandler(BannerController.getAllForAdmin));
+// router.use(authentication);
+protectedRouter.get("/admin", permission(), asyncHandler(BannerController.getAllForAdmin));
 
-router.post(
-    "/",
-    // permission([ADMIN, EMPLOYEE]),
+protectedRouter.post(
+    "",
+    permission(),
     body("imageId").notEmpty().withMessage("ImageId is missing"),
     body("priority").notEmpty().withMessage("Priority is missing"),
     body("bannerCategoryId").notEmpty().withMessage("BannerCategoryId is missing"),
@@ -24,9 +28,9 @@ router.post(
     asyncHandler(BannerController.create)
 );
 
-router.put(
+protectedRouter.put(
     "/:id",
-    // permission([ADMIN, EMPLOYEE]),
+    permission(),
     param("id").custom(existBanner),
     validate,
     asyncHandler(BannerController.update)
@@ -40,4 +44,4 @@ router.delete(
     asyncHandler(BannerController.delete)
 );
 
-module.exports = router;
+module.exports = { router, protectedRouter };

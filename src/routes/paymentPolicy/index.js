@@ -1,23 +1,31 @@
 const { body, param, query } = require("express-validator");
 const { asyncHandler } = require("../../middlewares/asyncHandler");
-const { authentication } = require("../../middlewares/auth");
+const { authentication, permission } = require("../../middlewares/auth");
 const {
     validate,
 } = require("../../middlewares/validation");
 const PaymentPolicyController = require("../../controllers/paymentPolicy");
 
-const router = require("express").Router();
+// const router = require("express").Router();
 
-router.get(
-    "/",
+const express = require("express");
+const router = express.Router();
+const protectedRouter = express.Router();
+
+protectedRouter.use(authentication);
+
+protectedRouter.get(
+    "",
+    permission(),
     validate,
     asyncHandler(PaymentPolicyController.getAll)
 );
 
-router.get("/current", asyncHandler(PaymentPolicyController.getCurrent));
+router.get("/current", permission(), asyncHandler(PaymentPolicyController.getCurrent));
 
-router.get(
+protectedRouter.get(
     "/:policyId",
+    permission(),
     param("policyId")
         .notEmpty()
         .withMessage("policy ID is missing"),
@@ -25,16 +33,18 @@ router.get(
     asyncHandler(PaymentPolicyController.getById)
 );
 
-router.post(
-    "/",
+protectedRouter.post(
+    "",
+    permission(),
     body("visible").notEmpty().withMessage("Visibility is missing"),
     body("content").notEmpty().withMessage("Content is missing"),
     validate,
     asyncHandler(PaymentPolicyController.create)
 );
 
-router.put(
+protectedRouter.put(
     "/:policyId",
+    permission(),
     param("policyId")
         .notEmpty()
         .withMessage("policy ID is missing"),
@@ -42,9 +52,10 @@ router.put(
     asyncHandler(PaymentPolicyController.update)
 );
 
-// hide review
-router.put(
+// hide policy
+protectedRouter.put(
     "/toggleHide/:policyId",
+    permission(),
     param("policyId")
         .notEmpty()
         .withMessage("policyId ID is missing"),
@@ -52,4 +63,4 @@ router.put(
     asyncHandler(PaymentPolicyController.toggleHide)
 );
 
-module.exports = router;
+module.exports = { router, protectedRouter };

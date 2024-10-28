@@ -8,22 +8,24 @@ const {
   existAccount,
   convertDateStringToISODate,
 } = require("../../middlewares/validation");
-const { ADMIN } = require("../../constant/roles");
 
-router.get("/", asyncHandler(AccountController.getAll));
-router.get("/:id", asyncHandler(AccountController.getOne));
-// router.delete("/", asyncHandler(AccountController.deleteAll));
 router.use(authentication);
-router.post("/", asyncHandler(AccountController.create));
+
+router.post("", permission(), asyncHandler(AccountController.create));
+router.get("", permission(), asyncHandler(AccountController.getAll));
+router.get("/:id", permission(), asyncHandler(AccountController.getOne));
+// router.delete("/", asyncHandler(AccountController.deleteAll));
 router.put(
-  "/",
+  "",
+  permission(), 
   body("email").isEmpty().withMessage("Can not update email"),
   body("birthday").custom(convertDateStringToISODate),
   validate,
   asyncHandler(AccountController.updateInformation)
 );
 router.put(
-  "/:id",
+  "/:accountId",
+  permission(), 
   body("email").isEmpty().withMessage("Can not update email"),
   body("birthday").custom(convertDateStringToISODate),
   validate,
@@ -31,16 +33,17 @@ router.put(
 );
 router.put(
   "/password",
+  permission(), 
   asyncHandler(AccountController.changePassword)
 );
 
 // lock account
 router.put(
   "/toggleActive/:accountId",
-  permission([ADMIN]),
+  permission(),
   param("accountId")
-      .notEmpty()
-      .withMessage("account ID is missing"),
+    .notEmpty()
+    .withMessage("account ID is missing"),
   validate,
   asyncHandler(AccountController.toggleActiveAccount)
 );

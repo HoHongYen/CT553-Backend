@@ -168,7 +168,6 @@ function generateToken(account) {
       ...account,
       password: undefined,
       role: account.role.role,
-      roleId: undefined,
     },
     tokens,
   };

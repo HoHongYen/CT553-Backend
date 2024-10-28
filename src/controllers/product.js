@@ -49,7 +49,7 @@ class ProductController {
 
   static async update(req, res) {
     new OKResponse({
-      metadata: await ProductService.update(+req.params.id, req.body),
+      metadata: await ProductService.update(+req.params.productId, req.body),
     }).send(res);
   }
 

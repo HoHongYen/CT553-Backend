@@ -12,15 +12,21 @@ const {
   existCategories,
 } = require("../../middlewares/validation");
 const { authentication, permission } = require("../../middlewares/auth");
-const { ADMIN, EMPLOYEE } = require("../../constant/roles");
 const cloudUploader = require("../../middlewares/cloudUploader");
 const { PRODUCT_QUERY_TYPES } = require("../../constant/productType");
 const { DISCOUNT_TYPES } = require("../../constant/discountType");
 
-const router = require("express").Router();
+// const router = require("express").Router();
+
+const express = require("express");
+const router = express.Router();
+const protectedRouter = express.Router();
+
+protectedRouter.use(authentication);
 
 router.get(
   "",
+  permission(),
   query("type")
     .notEmpty()
     .withMessage("Product query type is missing!")
@@ -79,16 +85,15 @@ router.get(
   asyncHandler(ProductController.getOneBySlug)
 );
 
-router.get(
+protectedRouter.get(
   "/slug/allDiscounts/:slug",
+  permission(),
   param("slug").custom(existProductWithSlug),
   validate,
   asyncHandler(ProductController.getOneBySlugWithAllDiscounts)
 );
 
-// router.use(authentication);
-
-router.post(
+protectedRouter.post(
   "",
   // permission([ADMIN, EMPLOYEE]),
   body("name").notEmpty().withMessage("Name is missing"),
@@ -110,16 +115,16 @@ router.post(
   asyncHandler(ProductController.create)
 );
 
-router.put(
-  "/:id",
-  // permission([ADMIN, EMPLOYEE]),
-  param("id").custom(existProduct),
+protectedRouter.put(
+  "/:productId",
+  permission(),
+  param("productId").custom(existProduct),
   asyncHandler(ProductController.update),
   validate,
 );
 
 // hide product
-router.put(
+protectedRouter.put(
   "/toggleHide/:productId",
   param("productId")
       .notEmpty()
@@ -236,4 +241,5 @@ router.put(
   asyncHandler(ProductController.updateDiscount)
 );
 
-module.exports = router;
+// module.exports = router;
+module.exports = { router, protectedRouter };
