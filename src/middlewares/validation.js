@@ -60,6 +60,15 @@ const existBanner = async (bannerId) => {
   if (!foundBanner) throw new BadRequest("Banner not found");
 };
 
+const existPermission = async (permissionId) => {
+  if (!permissionId) return true;
+  if (!Number.parseInt(permissionId)) throw new BadRequest("Permission not found");
+  const foundPermision = await prisma.permission.findUnique({
+    where: { id: +permissionId },
+  });
+  if (!foundPermision) throw new BadRequest("Permission not found");
+};
+
 const existBannerCategory = async (bannerCategoryId) => {
   if (!bannerCategoryId) return true;
   if (!Number.parseInt(bannerCategoryId)) throw new BadRequest("Banner category not found");
@@ -281,6 +290,7 @@ module.exports = {
   existCategories,
   existBanner,
   existBannerCategory,
+  existPermission,
   existProduct,
   existProductWithSlug,
   existProductImage,

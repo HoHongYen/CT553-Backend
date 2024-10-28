@@ -1,35 +1,67 @@
 const { Forbidden, UnAuthorized } = require("../response/error");
 const { asyncHandler } = require("../middlewares/asyncHandler");
+const { getRole } = require("../constant/roles");
 const jwt = require("jsonwebtoken");
+const PermissionService = require("../services/permission");
 
-const permission = (permittedRoles) => (req, res, next) => {
-  console.log("req", req);
-  // const reqPath = req.originalUrl.replace(/\?.*$/, '');
-  // console.log("req.path", reqPath);
-  const baseUrl = req.baseUrl;
-  const reqRoute = req.route.path;
-  const fullPath = baseUrl + reqRoute;
-  console.log("fullPath", fullPath);
+const permission = () => async (req, res, next) => {
+  console.log("permission middleware");
+  try {
+    // const reqPath = req.originalUrl.replace(/\?.*$/, '');
+    // console.log("req.path", reqPath);
+    const baseUrl = req.baseUrl;
+    const reqRoute = req.route.path;
+    const fullPath = baseUrl + reqRoute;
 
-  // const tempPath = "/api/accounts/toggleActive/:accountId";
-  // console.log('Check path', fullPath === tempPath);
+    // const tempPath = "/api/accounts/toggleActive/:accountId";
+    // console.log('Check path', fullPath === tempPath);
 
-  // get method
-  const reqMethod = req.method;
-  console.log("req.method", reqMethod);
-  console.log("permittedRoles", permittedRoles);
-  const accountRole = req.account.role;
+    // get method
+    const reqMethod = req.method;
 
-  if (!accountRole || !permittedRoles.includes(accountRole))
-    throw new Forbidden("You don't have permission to perform this action");
+    // get roles that can access the route
+    const allPermissions = await PermissionService.getAll();
 
-  next();
+    console.log("fullPath", fullPath);
+    console.log("reqMethod", reqMethod);
+
+    // console.log("allPermissions", allPermissions);
+
+    const permission = allPermissions.find(
+      (permission) => permission.api === fullPath && permission.method === reqMethod
+    );
+
+    if (!permission) throw new Forbidden("You don't have permission to perform this action");
+
+    let permittedRoles = await PermissionService.getByPermission(permission.id);
+
+    permittedRoles = permittedRoles.map((roleID) => getRole(roleID));
+
+    console.log("permittedRoles", permittedRoles);
+    
+    if (permittedRoles.includes("NOT_REGISTERED")) {
+      next();
+      return;
+    }
+
+    const accountRole = req.account.role;
+
+    console.log("accountRole", accountRole);
+
+    if (!accountRole || !permittedRoles.includes(accountRole))
+      throw new Forbidden("You don't have permission to perform this action");
+
+    next();
+  } catch (error) {
+    console.log("error", error);
+    next(error);
+  }
 };
 
 const authentication = (req, res, next) => {
   try {
     const token = getTokenFromRequest(req);
-    
+
     req.account = jwt.verify(token, process.env.JWT_SECRET);
 
     next();

@@ -18,8 +18,8 @@ class AccountController {
     delete req.body.email;
     new OKResponse({
       metadata: await AccountService.updateInformation(
-        +req.params.id,
-        req.body
+        +req.params.accountId,
+        req.body  
         
       ),
     }).send(res);
