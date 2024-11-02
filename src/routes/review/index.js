@@ -76,9 +76,9 @@ protectedRouter.post(
     asyncHandler(ReviewController.create)
 );
 
-router.post(
+protectedRouter.post(
     "/reply",
-    // permission([ADMIN, EMPLOYEE]),
+    permission(),
     body("orderId").notEmpty().withMessage("Order ID is missing").custom(existOrder),
     body("variantId").notEmpty().withMessage("Variant ID is missing").custom(existVariant),
     body("productId").notEmpty().withMessage("Product ID is missing").custom(existProduct),
@@ -88,6 +88,17 @@ router.post(
         .withMessage("Reply to review id not found"),
     validate,
     asyncHandler(ReviewController.createReply)
+);
+
+protectedRouter.put(
+    "/reply/:reviewId",
+    param("reviewId")
+        .notEmpty()
+        .withMessage("review ID is missing")
+        .custom(existReviewOfAccount),
+    body("comment").notEmpty().withMessage("Comment is missing"),
+    validate,
+    asyncHandler(ReviewController.updateReply)
 );
 
 // review_image begin

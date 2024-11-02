@@ -86,7 +86,7 @@ class ReviewService {
   static async createReply(
     accountId, { orderId, variantId, productId, comment, replyToReviewId, uploadedImageIds }
   ) {
-
+    console.log("replyToReviewId", replyToReviewId);
     // check if this review has already been replied
     const existingReview = await prisma.review.findFirst({
       where: {
@@ -123,6 +123,9 @@ class ReviewService {
   static async getAllReviews({ customerSearch, visible, hasReply, limit = 3, page, sortBy }) {
 
     let query = {
+      where: {
+        replyToReviewId: null,
+      },
       include: commonIncludeOptionsInReview,
       take: limit,
       orderBy: {
@@ -176,11 +179,6 @@ class ReviewService {
       query.where.visible = visible === "true";
     }
 
-    // if (hasReply !== "all") {
-    //   if (!query.where) Object.assign(query, { where: {} });
-    //   // replyByReview is not empty
-    // }
-
     // sort
     if (sortBy?.field === "createdAt") {
       query.orderBy = {
@@ -192,14 +190,19 @@ class ReviewService {
       };
     }
 
-    // pagination
-    const count = await prisma.review.count({
-      where: query.where,
-    })
+    let reviews = await prisma.review.findMany({ ...query });
 
-    const offset = page > 1 ? (page - 1) * limit : 0;
+    // filter by hasReply
+    if (hasReply === "true") {
+      reviews = reviews.filter((review) => review.replyByReview.length > 0);
+    } else if (hasReply === "false") {
+      reviews = reviews.filter((review) => review.replyByReview.length === 0);
+    }
+
+    // pagination
+    const count = reviews.length;
     const totalPages = Math.ceil(count / limit);
-    let reviews = await prisma.review.findMany({ ...query, skip: offset });
+    reviews = reviews.slice((page - 1) * limit, page * limit);
 
     return {
       reviews, pagination: {
@@ -215,6 +218,7 @@ class ReviewService {
     let query = {
       where: {
         visible: true,
+        replyToReviewId: null,
       },
       include: commonIncludeOptionsInReview,
       take: 10,
@@ -242,6 +246,7 @@ class ReviewService {
           },
         },
         visible: true,
+        replyToReviewId: null,
       },
       include: commonIncludeOptionsInReview,
       take: limit,
@@ -426,6 +431,26 @@ class ReviewService {
       data: {
         rating,
         comment,
+      },
+    });
+    return updatedReview;
+  }
+
+  static async updateReply(
+    reviewId,
+    accountId,
+    {
+      comment,
+    }
+  ) {
+
+    const updatedReview = await prisma.review.update({
+      where: {
+        id: +reviewId,
+      },
+      data: {
+        comment,
+        
       },
     });
     return updatedReview;

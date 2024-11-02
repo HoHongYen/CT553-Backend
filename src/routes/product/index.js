@@ -126,6 +126,7 @@ protectedRouter.put(
 // hide product
 protectedRouter.put(
   "/toggleHide/:productId",
+  permission(),
   param("productId")
       .notEmpty()
       .withMessage("product ID is missing"),

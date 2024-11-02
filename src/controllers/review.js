@@ -38,6 +38,14 @@ class ReviewController {
     }).send(res);
   }
 
+  static async updateReply(req, res) {
+    new CreatedResponse({
+      metadata: await ReviewService.updateReply(req.params.reviewId, req.account.id, {
+        comment: req.body.comment,
+      }),
+    }).send(res);
+  }
+
   static async addImage(req, res) {
     new CreatedResponse({
       metadata: await ReviewService.addImage(+req.params.id, req.body),

@@ -1,3 +1,5 @@
+const { reviewImage } = require("../config/prismaClient");
+
 const commonIncludeOptionsInReview = {
     orderDetail: {
         include: {
@@ -41,8 +43,36 @@ const commonIncludeOptionsInReview = {
             },
         },
     },
-    replyByReview: true,
-}
+    // this is an array of review, we want to include the reviewImage of each review
+    replyByReview: {
+        include: {
+            account: {
+                select: {
+                    id: true,
+                    fullName: true,
+                    avatar: {
+                        select: {
+                            path: true,
+                        },
+                    }
+                },
+            },
+            reviewImage: {
+                select: {
+                    id: true,
+                    image: {
+                        select: {
+                            id: true,
+                            path: true,
+                        },
+                    },
+                },
+
+            },
+        }
+    },
+
+};
 
 module.exports = {
     commonIncludeOptionsInReview,
