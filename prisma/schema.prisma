@@ -95,7 +95,7 @@ model Role {
 
 model Permission {
   id   Int    @id @default(autoincrement()) @map("permission_id")
-  name String 
+  name String
 
   api      String
   method   String
@@ -528,6 +528,7 @@ model ShopInfo {
   workingTime        String  @map("working_time")
   isMaintaining      Boolean @default(false) @map("is_maintaining")
   maintainingMessage String? @map("maintaining_message")
+  slogan             String?
 
   // address
   provinceName  String @map("province_name")

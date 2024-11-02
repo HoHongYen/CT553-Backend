@@ -13,12 +13,12 @@ class ShopInfoService {
         });
     }
 
-    static async create({ name, fullName, email, phone, businessCode, workingTime, isMaintaining,
+    static async create({ name, fullName, email, phone, slogan, businessCode, workingTime, isMaintaining,
         provinceId, districtId, wardCode, provinceName, districtName, wardName, detailAddress = "", logoId, maintainingMessage = "" }) {
 
         const newShopInfo = await prisma.shopInfo.create({
             data: {
-                name, fullName, email, phone, businessCode, workingTime, isMaintaining, provinceId: +provinceId,
+                name, fullName, email, phone, slogan, businessCode, workingTime, isMaintaining, provinceId: +provinceId,
                 districtId: +districtId, wardCode, provinceName, districtName, wardName, detailAddress, logoId: +logoId, maintainingMessage
             },
         });
@@ -27,7 +27,7 @@ class ShopInfoService {
 
     static async update(
         shopInfoId,
-        { name, fullName, email, phone, businessCode, workingTime, isMaintaining,
+        { name, fullName, email, phone, slogan, businessCode, workingTime, isMaintaining,
             provinceId, districtId, wardCode, provinceName, districtName, wardName, detailAddress = "", logoId, maintainingMessage = "" }
     ) {
         const updatedShopInfo = await prisma.shopInfo.update({
@@ -35,7 +35,7 @@ class ShopInfoService {
                 id: +shopInfoId,
             },
             data: {
-                name, fullName, email, phone, businessCode, workingTime, isMaintaining, provinceId: +provinceId,
+                name, fullName, email, phone, slogan, businessCode, workingTime, isMaintaining, provinceId: +provinceId,
                 districtId: +districtId, wardCode, provinceName, districtName, wardName, detailAddress, logoId: +logoId, maintainingMessage
             }
         });

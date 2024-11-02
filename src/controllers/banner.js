@@ -20,6 +20,7 @@ class BannerController {
             metadata: await BannerService.getAllForAdmin({
                 bannerSearch: req.query.bannerSearch,
                 bannerCategoryId: +req.query.bannerCategoryId,
+                visible: req.query.visible,
                 limit: +req.query.limit,
                 page: +req.query.page || 1,
                 sortBy: req.query.sortBy,

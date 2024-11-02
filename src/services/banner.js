@@ -42,7 +42,7 @@ class BannerService {
     }
 
     // for admin
-    static async getAllForAdmin({ bannerSearch, bannerCategoryId, limit, page, sortBy }) {
+    static async getAllForAdmin({ bannerSearch, bannerCategoryId, visible, limit, page, sortBy }) {
         let query = {
             include: {
                 image: true,
@@ -97,6 +97,11 @@ class BannerService {
                 ...query.where,
                 bannerCategoryId: +bannerCategoryId
             }
+        }
+
+        if (visible !== "all") {
+            if (!query.where) Object.assign(query, { where: {} });
+            query.where.visible = visible === "true";
         }
 
         // pagination
