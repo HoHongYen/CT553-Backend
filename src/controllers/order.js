@@ -52,6 +52,12 @@ class OrderController {
     }).send(res);
   }
 
+  static async return(req, res) {
+    new OKResponse({
+      metadata: await OrderService.return(+req.params.orderId),
+    }).send(res);
+  }
+
   static async getOrdersOfBuyerByOrderStatus(req, res) {
     new OKResponse({
       metadata: await OrderService.getOrdersOfBuyerByOrderStatus({

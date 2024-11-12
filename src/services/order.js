@@ -2,9 +2,9 @@ const prisma = require("../config/prismaClient");
 const { ORDER_STATUS_ID_MAPPING } = require("../constant/orderStatus");
 const { PAYMENT_STATUS_ID_MAPPING } = require("../constant/paymentStatus");
 const { PAYMENT_METHOD_ID_MAPPING } = require("../constant/paymentMethod");
-const CategoryService = require("./category");
 const { BadRequest } = require("../response/error");
 const { eachDayOfInterval, subDays, eachMonthOfInterval } = require("date-fns");
+const SendEmailService = require("./sendEmail");
 
 const commonIncludeOptionsInOrder = {
   buyer: true,
@@ -675,13 +675,14 @@ class OrderService {
             variant: true,
           },
         },
+        buyer: true,
       },
     });
 
     if (
       foundedOrder.currentStatusId !=
       ORDER_STATUS_ID_MAPPING.AWAITING_CONFIRM &&
-      foundedOrder != ORDER_STATUS_ID_MAPPING.AWAITING_FULFILLMENT
+      foundedOrder.currentStatusId != ORDER_STATUS_ID_MAPPING.AWAITING_FULFILLMENT
     ) {
       throw new BadRequest("You can not cancel the delivering order");
     }
@@ -744,6 +745,17 @@ class OrderService {
         )
       );
 
+      // send email to buyer
+      await SendEmailService.sendEmail(
+        foundedOrder.buyer.email,
+        "Shop tranh trang trí Decorpic - Hủy đơn hàng thành công",
+        `<h3>Chào <strong>${foundedOrder.buyer.fullName}</strong>, đơn hàng của bạn với mã đơn #${foundedOrder.id} đã được hủy thành công. </h3>
+        <p>Nếu đã thanh toán, bạn vui lòng liên hệ với chúng tôi qua số điện thoại 0856408499 hoặc phản hồi mail này để được hoàn tiền.</p>
+        <p>Vui lòng kiểm tra lại thông tin đơn hàng tại trang web của cửa hàng. </p>
+        <p>Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi.</p>
+        <strong><i>Cửa hàng bán tranh trang trí Decorpic</i></strong>`
+      );
+
       return await tx.order.update({
         where: { id: foundedOrder.id },
         data: {
@@ -751,6 +763,55 @@ class OrderService {
         },
       });
     });
+  }
+
+  static async return(orderId) {
+    const foundedOrder = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        orderDetail: {
+          include: {
+            variant: true,
+          },
+        },
+        buyer: true,
+        deliveryAddress: true,
+      },
+    });
+
+    if (
+      foundedOrder.currentStatusId != ORDER_STATUS_ID_MAPPING.DELIVERED
+    ) {
+      throw new BadRequest("You can not return the undelivered order");
+    }
+
+    // create order tracking
+    await prisma.orderTracking.create({
+      data: {
+        orderId: foundedOrder.id,
+        orderStatusId: ORDER_STATUS_ID_MAPPING.RETURNED,
+        beginAt: new Date(),
+      },
+    });
+
+    // send email to buyer
+    await SendEmailService.sendEmail(
+      foundedOrder.buyer.email,
+      "Shop tranh trang trí Decorpic - Yêu cầu đổi trả đơn hàng",
+      `<h3>Chào <strong>${foundedOrder.buyer.fullName}</strong>, yêu cầu đổi trả đơn hàng của bạn với mã đơn #${foundedOrder.id} đã được gửi thành công. </h3>
+      <p>Chúng tôi sẽ sớm liên hệ lại với bạn qua số điện thoại bạn cung cấp ${foundedOrder.deliveryAddress.contactPhone}.</p>
+      <p>Vui lòng chuẩn bị sẵn thông tin tình trạng sản phẩm cần đổi trả để cung cấp cho chúng tôi nhằm tiện trao đổi.</p>
+      <p>Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi.</p>
+      <strong><i>Cửa hàng bán tranh trang trí Decorpic.</i></strong>`
+    );
+
+    return await prisma.order.update({
+      where: { id: foundedOrder.id },
+      data: {
+        currentStatusId: ORDER_STATUS_ID_MAPPING.RETURNED,
+      },
+    });
+
   }
 
   static async updatePaymentStatus(orderId, vnPayResponseCode) {

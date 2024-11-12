@@ -75,6 +75,8 @@ router.use("/shopInfo", shopInfoRouter.protectedRouter);
 
 router.use("/recommend", require("./recommend"));
 
+router.use("/sendEmail", require("./sendEmail"));
+
 // router.use("/banners", require("./banner"));
 const bannerRouter = require("./banner");
 router.use("/banners", bannerRouter.router);

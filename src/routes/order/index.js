@@ -83,10 +83,17 @@ protectedRouter.get(
 );
 
 protectedRouter.put(
-  "/:orderId",
+  "/cancel/:orderId",
   param("orderId").custom(existOrderOfAccount),
   validate,
   asyncHandler(OrderController.cancel)
+);
+
+protectedRouter.put(
+  "/return/:orderId",
+  param("orderId").custom(existOrderOfAccount),
+  validate,
+  asyncHandler(OrderController.return)
 );
 
 module.exports = { router, protectedRouter };
