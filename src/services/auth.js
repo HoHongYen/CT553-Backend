@@ -4,6 +4,7 @@ const { BadRequest } = require("../response/error");
 const { generatePairTokens } = require("../utils/generateToken");
 const { ADMIN, EMPLOYEE, getRole } = require("../constant/roles");
 const { changeImageUrlToFile } = require("../utils/index");
+const SendEmailService = require("./sendEmail");
 
 class AuthService {
   static async register({
@@ -27,6 +28,21 @@ class AuthService {
         avatarId: +avatarId,
       },
     });
+
+    console.log(newAccount);
+
+    // send email to buyer
+    // await SendEmailService.sendEmail(
+    //   email,
+    //   "Chào mừng đến với Decorpic",
+    //   `<h3>Chào mừng đến với Guardian VietNam! </h3>
+    //   <p>Chào <strong>${fullName}</strong>, chúc mừng bạn đã kích hoạt tài khoản khách hàng thành công. Lần mua hàng tiếp theo, đăng nhập để việc thanh toán thuận tiện hơn. </p>
+    //   <p>Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi.</p>
+    //   <strong><i>Cửa hàng bán tranh trang trí Decorpic.</i></strong>`
+    // );
+
+    console.log("send email success");
+
     return newAccount;
   }
 
@@ -103,6 +119,16 @@ class AuthService {
         },
       },
     });
+
+    // send email to buyer
+    await SendEmailService.sendEmail(
+      email,
+      "Chào mừng đến với Decorpic",
+      `<h3>Chào mừng đến với Guardian VietNam! </h3>
+      <p>Chào <strong>${fullName}</strong>, chúc mừng bạn đã kích hoạt tài khoản khách hàng thành công. Lần mua hàng tiếp theo, đăng nhập để việc thanh toán thuận tiện hơn. </p>
+      <p>Cảm ơn bạn đã sử dụng dịch vụ của chúng tôi.</p>
+      <strong><i>Cửa hàng bán tranh trang trí Decorpic.</i></strong>`
+    );
 
     return generateToken(account);
   }
