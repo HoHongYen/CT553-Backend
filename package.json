@@ -13,7 +13,6 @@
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^5.7.1",
-    "actions-on-google": "^3.0.0",
     "bcrypt": "^5.1.1",
     "cheerio": "^1.0.0-rc.12",
     "cloudinary": "^1.41.3",
