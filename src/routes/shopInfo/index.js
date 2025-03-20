@@ -24,7 +24,7 @@ router.get(
     asyncHandler(ShopInfoController.getOne)
 );
 
-protectedRouter.post(
+router.post(
     "",
     permission(),
     body("name")
