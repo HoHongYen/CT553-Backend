@@ -120,7 +120,7 @@ class WebhookService {
               }
             },
             // "actionLink": "http://localhost:5173/chinh-sach-thanh-toan"
-            "actionLink": `${process.env.FRONTEND_URL_V2}/chinh-sach-thanh-toan`
+            "actionLink": `${process.env.FRONTEND_URL}/chinh-sach-thanh-toan`
           }
         ]
       ]
