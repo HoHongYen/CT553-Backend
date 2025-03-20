@@ -178,9 +178,9 @@ class ProductController {
   static async searchByImageUrl(req, res) {
     const imageUrl = req.query.imageUrl;
     let uploadedImagePath = "";
-    if (imageUrl.startsWith(process.env.BACKEND_URL)) {
+    if (imageUrl.startsWith(process.env.BACKEND_URL_V2)) {
       uploadedImagePath = imageUrl.substring(
-        process.env.BACKEND_URL.length + 1
+        process.env.BACKEND_URL_V2.length + 1
       );
     }
     new OKResponse({

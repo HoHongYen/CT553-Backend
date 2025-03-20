@@ -22,7 +22,7 @@ async function generateEmbeddingsFromText(text) {
 async function generateEmbeddingsFromTextV2(text) {
   try {
     const res = await fetch(
-      `${process.env.EMBEDDING_SERVICE_URL}/api/embeddings/text`,
+      `${process.env.EMBEDDING_SERVICE_URL_V2}/api/embeddings/text`,
       {
         method: "POST",
         headers: {
@@ -43,7 +43,7 @@ async function generateEmbeddingsFromTextV2(text) {
 async function generateEmbeddingsFromImageUrl(imageUrl) {
   try {
     const res = await fetch(
-      `${process.env.EMBEDDING_SERVICE_URL}/api/embeddings/image`,
+      `${process.env.EMBEDDING_SERVICE_URL_V2}/api/embeddings/image`,
       {
         method: "POST",
         headers: {

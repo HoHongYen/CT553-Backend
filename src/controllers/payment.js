@@ -27,7 +27,7 @@ class PaymentController {
     const orderId = +req.body.orderId;
     const orderInfo = "Thanh toan qua VNPay cho don hang voi ma " + orderId;
     const orderType = 200000;
-    const returnUrl = `${process.env.BACKEND_URL}/api/payments/vnpay_return`;
+    const returnUrl = `${process.env.BACKEND_URL_V2}/api/payments/vnpay_return`;
 
     let VNPayParams = {};
     VNPayParams["vnp_Version"] = "2.1.0";

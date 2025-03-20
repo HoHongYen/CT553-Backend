@@ -119,7 +119,8 @@ class WebhookService {
                 "rawUrl": "/logo.png"
               }
             },
-            "actionLink": "http://localhost:5173/chinh-sach-thanh-toan"
+            // "actionLink": "http://localhost:5173/chinh-sach-thanh-toan"
+            "actionLink": `${process.env.FRONTEND_URL_V2}/chinh-sach-thanh-toan`
           }
         ]
       ]
