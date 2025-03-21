@@ -11,7 +11,10 @@ class UploadTempDataController {
 
     static async crawlMany(req, res) {
         new CreatedResponse({
-            metadata: await ProductService.crawlMany("tranh-phong-khach"),
+            metadata: await ProductService.crawlMany({
+                urls: req.body.urls,
+                categorySlugs: req.body.categorySlugs
+            }),
         }).send(res);
     }
 
@@ -19,7 +22,9 @@ class UploadTempDataController {
         new CreatedResponse({
             metadata: await ProductService.crawlCategory({
                 url: req.body.url,
-                categorySlugs: req.body.categorySlugs
+                categorySlugs: req.body.categorySlugs,
+                from: req.body.from,
+                to: req.body.to
             }),
         }).send(res);
     }

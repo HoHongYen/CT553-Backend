@@ -128,8 +128,8 @@ class ProductService {
     );
   }
 
-  static async crawlCategory({ categorySlugs, url }) {
-    const links = await getAllProductLinks(url);
+  static async crawlCategory({ categorySlugs, url, from, to }) {
+    const links = await getAllProductLinks(url, from, to);
     return await ProductService.crawlMany({ categorySlugs, urls: links });
   }
 

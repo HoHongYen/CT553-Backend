@@ -129,7 +129,7 @@ const getProduct = async (url) => {
 	return pictureData;
 }
 
-const getAllProductLinks = async (url) => {
+const getAllProductLinks = async (url, from, to) => {
 	const browser = await puppeteer.launch();
 	const page = await browser.newPage();
 	await page.goto(url, { timeout: 0 });
@@ -143,7 +143,7 @@ const getAllProductLinks = async (url) => {
 		let link = $(element).attr('href');
 		links.push(link);
 	})
-	links = links.slice(36, 41);
+	links = links.slice(from, to);
 	console.log("links", links);
 	return links;
 }
