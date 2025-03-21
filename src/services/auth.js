@@ -89,7 +89,7 @@ class AuthService {
     const file = await changeImageUrlToFile(avatarURL);
     form.append("image", file);
 
-    const uploadedImageId = await fetch(`http://localhost:5000/api/upload/image`, {
+    const uploadedImageId = await fetch(`${process.env.BACKEND_URL}/api/upload/image`, {
       method: "POST",
       body: form
     }).then(function (a) {

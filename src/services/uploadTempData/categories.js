@@ -216,7 +216,7 @@ async function uploadCategory(category) {
 
     // const uploadedImage = await uploadImage(form);
 
-    fetch(`http://localhost:5000/api/upload/image`, {
+    fetch(`${process.env.BACKEND_URL}/api/upload/image`, {
         method: "POST",
         body: form
     }).then(function (a) {

@@ -56,7 +56,7 @@ const getUploadedImageId = async (imageUrl) => {
   const file = await changeImageUrlToFile(imageUrl);
   form.append("image", file);
 
-  const uploadedImageId = await fetch(`http://localhost:5000/api/upload/image`, {
+  const uploadedImageId = await fetch(`${process.env.BACKEND_URL}/api/upload/image`, {
     method: "POST",
     body: form
   }).then(function (a) {
@@ -75,7 +75,7 @@ const getUploadedImageIds = async (imageUrls) => {
     form.append("images", file);
   }));
 
-  const uploadedImageIds = await fetch(`http://localhost:5000/api/upload/images`, {
+  const uploadedImageIds = await fetch(`${process.env.BACKEND_URL}/api/upload/images`, {
     method: "POST",
     body: form
   }).then(function (a) {
