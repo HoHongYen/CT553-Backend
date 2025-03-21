@@ -13,14 +13,18 @@ const protectedRouter = express.Router();
 protectedRouter.use(authentication);
 
 router.get("", asyncHandler(BannerController.getAll));
-router.get("/getByBannerCategory/:bannerCategoryId", permission(), asyncHandler(BannerController.getBannerByBannerCategoryId));
+router.get("/getByBannerCategory/:bannerCategoryId", 
+    // permission(), 
+    asyncHandler(BannerController.getBannerByBannerCategoryId));
 
 // router.use(authentication);
-protectedRouter.get("/admin", permission(), asyncHandler(BannerController.getAllForAdmin));
+protectedRouter.get("/admin", 
+    // permission(), 
+    asyncHandler(BannerController.getAllForAdmin));
 
 protectedRouter.post(
     "",
-    permission(),
+    // permission(),
     body("imageId").notEmpty().withMessage("ImageId is missing"),
     body("priority").notEmpty().withMessage("Priority is missing"),
     body("bannerCategoryId").notEmpty().withMessage("BannerCategoryId is missing"),
@@ -30,7 +34,7 @@ protectedRouter.post(
 
 protectedRouter.put(
     "/:id",
-    permission(),
+    // permission(),
     param("id").custom(existBanner),
     validate,
     asyncHandler(BannerController.update)

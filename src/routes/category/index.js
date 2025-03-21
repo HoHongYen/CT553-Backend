@@ -12,7 +12,9 @@ const protectedRouter = express.Router();
 
 protectedRouter.use(authentication);
 
-router.get("", permission(), asyncHandler(CategoryController.getAll));
+router.get("", 
+  // permission(),
+   asyncHandler(CategoryController.getAll));
 router.get("/admin", asyncHandler(CategoryController.getAllForAdmin));
 router.get("/breadcrumb", asyncHandler(CategoryController.getBreadcrumb));
 router.get("/:categoryId", asyncHandler(CategoryController.getOne));
@@ -21,7 +23,7 @@ router.get("/children/:categoryId", asyncHandler(CategoryController.getChildren)
 
 protectedRouter.post(
   "",
-  permission(),
+  // permission(),
   body("name").notEmpty().withMessage("Name is missing"),
   body("slug").notEmpty().withMessage("Slug is missing"),
   body("thumbnailImageId").notEmpty().withMessage("ThumbnailImageId is missing"),
@@ -34,7 +36,7 @@ protectedRouter.post(
 
 protectedRouter.put(
   "/:id",
-  permission(),
+  // permission(),
   param("id").custom(existCategory),
   validate,
   asyncHandler(CategoryController.update)

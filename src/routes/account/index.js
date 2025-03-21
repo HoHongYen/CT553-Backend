@@ -11,13 +11,19 @@ const {
 
 router.use(authentication);
 
-router.post("", permission(), asyncHandler(AccountController.create));
-router.get("", permission(), asyncHandler(AccountController.getAll));
-router.get("/:id", permission(), asyncHandler(AccountController.getOne));
+router.post("", 
+  // permission(), 
+  asyncHandler(AccountController.create));
+router.get("", 
+  // permission(), 
+  asyncHandler(AccountController.getAll));
+router.get("/:id", 
+  // permission(), 
+  asyncHandler(AccountController.getOne));
 // router.delete("/", asyncHandler(AccountController.deleteAll));
 router.put(
   "",
-  permission(), 
+  // permission(), 
   body("email").isEmpty().withMessage("Can not update email"),
   body("birthday").custom(convertDateStringToISODate),
   validate,
@@ -25,7 +31,7 @@ router.put(
 );
 router.put(
   "/:accountId",
-  permission(), 
+  // permission(), 
   body("email").isEmpty().withMessage("Can not update email"),
   body("birthday").custom(convertDateStringToISODate),
   validate,
@@ -33,14 +39,14 @@ router.put(
 );
 router.put(
   "/password",
-  permission(), 
+  // permission(), 
   asyncHandler(AccountController.changePassword)
 );
 
 // lock account
 router.put(
   "/toggleActive/:accountId",
-  permission(),
+  // permission(),
   param("accountId")
     .notEmpty()
     .withMessage("account ID is missing"),

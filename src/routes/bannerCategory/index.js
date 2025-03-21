@@ -12,7 +12,9 @@ const protectedRouter = express.Router();
 
 protectedRouter.use(authentication);
 
-protectedRouter.get("", permission(), asyncHandler(BannerCategoryController.getAll));
+protectedRouter.get("",
+    //  permission(),
+      asyncHandler(BannerCategoryController.getAll));
 
 router.get("/:id", asyncHandler(BannerCategoryController.getOne));
 
@@ -20,7 +22,7 @@ router.get("/:id", asyncHandler(BannerCategoryController.getOne));
 
 protectedRouter.post(
     "",
-    permission(),
+    // permission(),
     body("name").notEmpty().withMessage("Name is missing"),
     validate,
     asyncHandler(BannerCategoryController.create)
@@ -28,7 +30,7 @@ protectedRouter.post(
 
 protectedRouter.put(
     "/:id",
-    permission(),
+    // permission(),
     param("id").custom(existBannerCategory),
     validate,
     asyncHandler(BannerCategoryController.update)

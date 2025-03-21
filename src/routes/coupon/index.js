@@ -7,13 +7,15 @@ const CouponController = require("../../controllers/coupon");
 
 const router = require("express").Router();
 
-router.get("/valid", permission(), asyncHandler(CouponController.getValidCoupons));
+router.get("/valid",
+  //  permission(), 
+   asyncHandler(CouponController.getValidCoupons));
 
 router.use(authentication);
 
 router.post(
   "",
-  permission(),
+  // permission(),
   body("code")
     .notEmpty()
     .withMessage("Coupon code is missing"),
@@ -51,13 +53,15 @@ router.post(
 
 router.put(
   "/:couponId",
-  permission(),
+  // permission(),
   param("couponId").custom(existCoupon),
   validate,
   asyncHandler(CouponController.updateCoupon)
 );
 
-router.get("", permission(), asyncHandler(CouponController.getAllCoupons));
+router.get("", 
+  // permission(),
+   asyncHandler(CouponController.getAllCoupons));
 
 router.post(
   "/collect",
@@ -68,7 +72,9 @@ router.post(
 
 router.get("/collected", asyncHandler(CouponController.getCollectedCoupons));
 
-router.get("/:code", permission(), asyncHandler(CouponController.getByCode));
+router.get("/:code", 
+  // permission(),
+   asyncHandler(CouponController.getByCode));
 
 router.delete("/:couponId", asyncHandler(CouponController.deleteCoupon));
 

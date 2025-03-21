@@ -16,16 +16,18 @@ protectedRouter.use(authentication);
 
 protectedRouter.get(
     "",
-    permission(),
+    // permission(),
     validate,
     asyncHandler(PaymentPolicyController.getAll)
 );
 
-router.get("/current", permission(), asyncHandler(PaymentPolicyController.getCurrent));
+router.get("/current", 
+    // permission(), 
+    asyncHandler(PaymentPolicyController.getCurrent));
 
 protectedRouter.get(
     "/:policyId",
-    permission(),
+    // permission(),
     param("policyId")
         .notEmpty()
         .withMessage("policy ID is missing"),
@@ -35,7 +37,7 @@ protectedRouter.get(
 
 protectedRouter.post(
     "",
-    permission(),
+    // permission(),
     body("visible").notEmpty().withMessage("Visibility is missing"),
     body("content").notEmpty().withMessage("Content is missing"),
     validate,
@@ -44,7 +46,7 @@ protectedRouter.post(
 
 protectedRouter.put(
     "/:policyId",
-    permission(),
+    // permission(),
     param("policyId")
         .notEmpty()
         .withMessage("policy ID is missing"),
@@ -55,7 +57,7 @@ protectedRouter.put(
 // hide policy
 protectedRouter.put(
     "/toggleHide/:policyId",
-    permission(),
+    // permission(),
     param("policyId")
         .notEmpty()
         .withMessage("policyId ID is missing"),

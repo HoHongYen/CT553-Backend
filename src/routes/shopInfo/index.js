@@ -26,7 +26,7 @@ router.get(
 
 router.post(
     "",
-    permission(),
+    // permission(),
     body("name")
         .notEmpty()
         .withMessage("name is missing"),

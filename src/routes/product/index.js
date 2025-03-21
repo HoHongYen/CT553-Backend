@@ -26,7 +26,7 @@ protectedRouter.use(authentication);
 
 router.get(
   "",
-  permission(),
+  // permission(),
   query("type")
     .notEmpty()
     .withMessage("Product query type is missing!")
@@ -87,7 +87,7 @@ router.get(
 
 protectedRouter.get(
   "/slug/allDiscounts/:slug",
-  permission(),
+  // permission(),
   param("slug").custom(existProductWithSlug),
   validate,
   asyncHandler(ProductController.getOneBySlugWithAllDiscounts)
@@ -117,7 +117,7 @@ protectedRouter.post(
 
 protectedRouter.put(
   "/:productId",
-  permission(),
+  // permission(),
   param("productId").custom(existProduct),
   asyncHandler(ProductController.update),
   validate,
@@ -126,7 +126,7 @@ protectedRouter.put(
 // hide product
 protectedRouter.put(
   "/toggleHide/:productId",
-  permission(),
+  // permission(),
   param("productId")
       .notEmpty()
       .withMessage("product ID is missing"),

@@ -17,18 +17,22 @@ const protectedRouter = express.Router();
 
 protectedRouter.use(authentication);
 
-protectedRouter.get("/all", permission(), asyncHandler(OrderController.getAll));
+protectedRouter.get("/all",
+  //  permission(), 
+   asyncHandler(OrderController.getAll));
 router.get("/allForReport", asyncHandler(OrderController.getAllForReport));
 router.get("/status-all", asyncHandler(OrderController.getAllOrderStatus));
 
 // router.use(authentication);
 
-protectedRouter.get("/:orderId", permission(), asyncHandler(OrderController.getById));
+protectedRouter.get("/:orderId",
+  //  permission(),
+    asyncHandler(OrderController.getById));
 protectedRouter.get("/customer/:orderId", asyncHandler(OrderController.customerGetById));
 
 protectedRouter.put(
   "/:orderId/status",
-  permission(),
+  // permission(),
   param("orderId").custom(existOrder),
   body("fromStatus")
     .notEmpty()
@@ -46,7 +50,7 @@ protectedRouter.put(
 
 protectedRouter.post(
   "",
-  permission(),
+  // permission(),
   body("totalPrice").notEmpty().withMessage("Total price is missing"),
   body("totalDiscount").notEmpty().withMessage("Total discount is missing"),
   body("finalPrice").notEmpty().withMessage("Final price is missing"),

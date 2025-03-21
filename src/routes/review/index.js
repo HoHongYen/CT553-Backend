@@ -42,7 +42,7 @@ router.get(
 // get all reviews of an account by admin
 protectedRouter.get(
     "/account/:accountId",
-    permission(),
+    // permission(),
     validate,
     asyncHandler(ReviewController.getAllReviewsOfAccount)
 );
@@ -50,7 +50,7 @@ protectedRouter.get(
 // get all review by admin
 protectedRouter.get(
     "",
-    permission(),
+    // permission(),
     validate,
     asyncHandler(ReviewController.getAllReviews)
 );
@@ -66,7 +66,7 @@ protectedRouter.post(
 
 protectedRouter.post(
     "",
-    permission(),
+    // permission(),
     body("orderId").notEmpty().withMessage("Order ID is missing").custom(existOrder),
     body("variantId").notEmpty().withMessage("Variant ID is missing").custom(existVariant),
     body("productId").notEmpty().withMessage("Product ID is missing").custom(existProduct),
@@ -78,7 +78,7 @@ protectedRouter.post(
 
 protectedRouter.post(
     "/reply",
-    permission(),
+    // permission(),
     body("orderId").notEmpty().withMessage("Order ID is missing").custom(existOrder),
     body("variantId").notEmpty().withMessage("Variant ID is missing").custom(existVariant),
     body("productId").notEmpty().withMessage("Product ID is missing").custom(existProduct),
@@ -124,7 +124,7 @@ router.delete(
 
 protectedRouter.put(
     "/:reviewId",
-    permission(),
+    // permission(),
     param("reviewId")
         .notEmpty()
         .withMessage("review ID is missing")
@@ -138,7 +138,7 @@ protectedRouter.put(
 // hide review
 protectedRouter.put(
     "/toggleHide/:reviewId",
-    permission(),
+    // permission(),
     param("reviewId")
         .notEmpty()
         .withMessage("review ID is missing"),
