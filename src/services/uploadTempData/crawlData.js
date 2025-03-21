@@ -3,8 +3,6 @@ const puppeteer = require('puppeteer');
 
 const getProduct = async (url) => {
 	const browser = await puppeteer.launch({
-		executablePath: await chromium.executablePath(),
-		headless: chromium.headless,
 		dumpio: true
 	});
 	const page = await browser.newPage();
