@@ -19,7 +19,7 @@ protectedRouter.use(authentication);
 
 router.get(
     "",
-    permission(),
+    // permission(),
     validate,
     asyncHandler(ShopInfoController.getOne)
 );
