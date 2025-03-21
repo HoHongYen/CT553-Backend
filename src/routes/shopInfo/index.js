@@ -24,7 +24,7 @@ router.get(
     asyncHandler(ShopInfoController.getOne)
 );
 
-router.post(
+routerva.post(
     "",
     permission(),
     body("name")
@@ -53,7 +53,7 @@ router.post(
 
 protectedRouter.put(
     "/:shopInfoId",
-    permission(),
+    // permission(),
     param("shopInfoId")
         .notEmpty()
         .withMessage("shopInfo ID is missing"),
