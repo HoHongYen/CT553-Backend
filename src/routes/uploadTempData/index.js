@@ -24,10 +24,16 @@ router.post(
 );
 
 router.post(
-  "/categories", (req, res) => {
-    // uploadParentCategories();
+  "/categories/parent", (req, res) => {
+    uploadParentCategories();
+    res.send("Parent categories uploaded successfully");
+  }
+);
+
+router.post(
+  "/categories/children", (req, res) => {
     uploadChildrenCategories();
-    res.send("Categories uploaded successfully");
+    res.send("Children categories uploaded successfully");
   }
 );
 
