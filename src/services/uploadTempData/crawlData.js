@@ -2,7 +2,11 @@ const cheerio = require('cheerio');
 const puppeteer = require('puppeteer');
 
 const getProduct = async (url) => {
-	const browser = await puppeteer.launch();
+	const browser = await puppeteer.launch({
+		executablePath: await chromium.executablePath(),
+		headless: chromium.headless,
+		dumpio: true
+	});
 	const page = await browser.newPage();
 	await page.goto(url, { timeout: 0 });
 	console.log("Capturing")
