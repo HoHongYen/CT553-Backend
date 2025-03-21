@@ -24,7 +24,7 @@ router.get(
     asyncHandler(ShopInfoController.getOne)
 );
 
-routerva.post(
+router.post(
     "",
     permission(),
     body("name")
